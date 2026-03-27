@@ -1,0 +1,68 @@
+[
+  {
+    "id": "1d98df1a-bde9-4919-a33a-d125ee9d8881",
+    "orderNo": "ORD-0326-001",
+    "items": [
+      {
+        "productId": "p8",
+        "productName": "เค้กช็อกโกแลต",
+        "price": 90,
+        "cost": 35,
+        "qty": 1,
+        "total": 90
+      },
+      {
+        "productId": "p3",
+        "productName": "ชานมไข่มุก",
+        "price": 65,
+        "cost": 18,
+        "qty": 1,
+        "total": 65
+      }
+    ],
+    "discount": 0,
+    "discountNote": "",
+    "subtotal": 155,
+    "total": 155,
+    "status": "open",
+    "createdAt": "2026-03-26T15:29:19.068Z",
+    "updatedAt": "2026-03-26T15:29:19.068Z"
+  },
+  {
+    "id": "ffef2737-738d-4239-81ab-f6f92d1d34d4",
+    "orderNo": "ORD-0326-002",
+    "items": [
+      {
+        "productId": "p6",
+        "productName": "ผัดกะเพราไก่",
+        "price": 75,
+        "cost": 28,
+        "qty": 1,
+        "total": 75
+      },
+      {
+        "productId": "p9",
+        "productName": "วาฟเฟิล",
+        "price": 85,
+        "cost": 30,
+        "qty": 1,
+        "total": 85
+      },
+      {
+        "productId": "p1",
+        "productName": "อเมริกาโน่",
+        "price": 60,
+        "cost": 15,
+        "qty": 1,
+        "total": 60
+      }
+    ],
+    "discount": 0,
+    "discountNote": "",
+    "subtotal": 220,
+    "total": 220,
+    "status": "open",
+    "createdAt": "2026-03-26T15:45:11.838Z",
+    "updatedAt": "2026-03-26T15:45:11.838Z"
+  }
+]

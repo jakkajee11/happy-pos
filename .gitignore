@@ -1,0 +1,38 @@
+# Dependencies
+node_modules/
+.pnp
+.pnp.js
+
+# Next.js
+.next/
+out/
+build/
+
+# Environment
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# TypeScript
+*.tsbuildinfo
+next-env.d.ts
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Push script (contains token — delete after use)
+push-to-github.sh
+
+# Data (ไม่ commit ข้อมูลจริง — commit แค่ตัวอย่าง)
+data/sales.json
+data/members.json
+data/stock_logs.json
+data/kitchen_orders.json

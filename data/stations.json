@@ -1,0 +1,18 @@
+[
+  {
+    "id": "station-kitchen",
+    "name": "ครัว",
+    "color": "#ef4444",
+    "printerId": null,
+    "isActive": true,
+    "createdAt": "2026-01-01T00:00:00.000Z"
+  },
+  {
+    "id": "station-bar",
+    "name": "บาร์",
+    "color": "#3b82f6",
+    "printerId": null,
+    "isActive": true,
+    "createdAt": "2026-01-01T00:00:00.000Z"
+  }
+]

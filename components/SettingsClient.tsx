@@ -174,7 +174,7 @@ export default function SettingsClient({ initialSettings, initialStations, initi
   }
 
   return (
-    <div className="p-6 max-w-4xl">
+    <div className="p-3 sm:p-4 lg:p-6 max-w-4xl">
       <div className="flex items-center justify-between mb-6">
         <div>
           <h1 className="text-2xl font-bold text-gray-800">ตั้งค่าระบบ</h1>
@@ -191,7 +191,7 @@ export default function SettingsClient({ initialSettings, initialStations, initi
       <div className="flex gap-1 mb-6 bg-gray-100 rounded-xl p-1 w-fit flex-wrap">
         {TABS.map(t => (
           <button key={t.id} onClick={() => setTab(t.id)}
-            className={clsx('flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all',
+            className={clsx('flex items-center gap-2 px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-medium transition-all',
               tab === t.id ? 'bg-white shadow-sm text-gray-800' : 'text-gray-500 hover:text-gray-700')}>
             <t.icon size={15} /> {t.label}
           </button>
@@ -199,9 +199,9 @@ export default function SettingsClient({ initialSettings, initialStations, initi
       </div>
 
       {tab === 'shop' && (
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 space-y-4">
+        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-3 sm:p-5 space-y-4">
           <h2 className="font-bold text-gray-800 mb-2">ข้อมูลร้านค้า</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">ชื่อร้าน</label>
               <input {...f('shopName')} className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-300" />
@@ -248,9 +248,9 @@ export default function SettingsClient({ initialSettings, initialStations, initi
       )}
 
       {tab === 'receipt' && (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
           {/* Settings */}
-          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 space-y-4">
+          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-3 sm:p-5 space-y-4">
             <h2 className="font-bold text-gray-800">ตั้งค่าใบเสร็จ</h2>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">ข้อความหัวใบเสร็จ</label>
@@ -277,7 +277,7 @@ export default function SettingsClient({ initialSettings, initialStations, initi
           </div>
 
           {/* Receipt Preview */}
-          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5">
+          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-3 sm:p-5">
             <h2 className="font-bold text-gray-800 mb-4 flex items-center gap-2">
               <Printer size={16} /> ตัวอย่างใบเสร็จ (80mm)
             </h2>
@@ -380,7 +380,7 @@ export default function SettingsClient({ initialSettings, initialStations, initi
           {/* Station Modal */}
           {showStationModal && (
             <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-              <div className="bg-white rounded-2xl w-full max-w-sm shadow-2xl p-5">
+              <div className="bg-white rounded-2xl w-full max-w-sm shadow-2xl p-3 sm:p-5">
                 <div className="flex items-center justify-between mb-4">
                   <h3 className="font-bold text-gray-800">{editingStation ? 'แก้ไขสถานี' : 'เพิ่มสถานีใหม่'}</h3>
                   <button onClick={() => { setShowStationModal(false); setEditingStation(null) }}><X size={20} /></button>
@@ -494,7 +494,7 @@ export default function SettingsClient({ initialSettings, initialStations, initi
           {/* Printer Modal */}
           {showPrinterModal && (
             <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-              <div className="bg-white rounded-2xl w-full max-w-sm shadow-2xl p-5 max-h-[90vh] overflow-y-auto">
+              <div className="bg-white rounded-2xl w-full max-w-sm shadow-2xl p-3 sm:p-5 max-h-[90vh] overflow-y-auto">
                 <div className="flex items-center justify-between mb-4">
                   <h3 className="font-bold text-gray-800">{editingPrinter ? 'แก้ไขเครื่องพิมพ์' : 'เพิ่มเครื่องพิมพ์'}</h3>
                   <button onClick={() => { setShowPrinterModal(false); setEditingPrinter(null) }}><X size={20} /></button>
@@ -506,7 +506,7 @@ export default function SettingsClient({ initialSettings, initialStations, initi
                       placeholder="เช่น เครื่องพิมพ์ครัว"
                       className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-300" />
                   </div>
-                  <div className="grid grid-cols-2 gap-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">ประเภท</label>
                       <select value={printerForm.type} onChange={e => setPrinterForm({ ...printerForm, type: e.target.value })}
@@ -537,8 +537,8 @@ export default function SettingsClient({ initialSettings, initialStations, initi
                     </select>
                   </div>
                   {printerForm.connectionType === 'network' && (
-                    <div className="grid grid-cols-3 gap-2">
-                      <div className="col-span-2">
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                      <div className="sm:col-span-2">
                         <label className="block text-sm font-medium text-gray-700 mb-1">IP Address</label>
                         <input value={printerForm.ipAddress} onChange={e => setPrinterForm({ ...printerForm, ipAddress: e.target.value })}
                           placeholder="192.168.1.100"
@@ -575,14 +575,14 @@ export default function SettingsClient({ initialSettings, initialStations, initi
 
       {/* ---- THEME TAB ---- */}
       {tab === 'theme' && (
-        <div className="space-y-6 max-w-2xl">
+        <div className="space-y-4 sm:space-y-6 max-w-2xl">
           <div>
             <h2 className="font-bold text-gray-800 mb-1">เลือกธีมสี</h2>
             <p className="text-sm text-gray-500">เปลี่ยนสีหลักของระบบ — มีผลทันทีหลังกดบันทึก</p>
           </div>
 
           {/* Preset Grid */}
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-3">
             {THEME_PRESETS.map(preset => (
               <button
                 key={preset.id}
@@ -639,7 +639,7 @@ export default function SettingsClient({ initialSettings, initialStations, initi
           </div>
 
           {/* Custom color picker */}
-          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
+          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-3 sm:p-5">
             <h3 className="font-semibold text-gray-700 mb-3 flex items-center gap-2">
               <Palette size={16} /> ปรับสีเอง
             </h3>
@@ -664,7 +664,7 @@ export default function SettingsClient({ initialSettings, initialStations, initi
           </div>
 
           {/* Live preview */}
-          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
+          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-3 sm:p-5">
             <h3 className="font-semibold text-gray-700 mb-3">ตัวอย่าง</h3>
             <div className="flex gap-2 flex-wrap">
               <button className="px-4 py-2 rounded-xl text-white text-sm font-medium" style={{ backgroundColor: (themeId === 'custom' ? customColor : (THEME_PRESETS.find(p => p.id === themeId)?.primary ?? '#f97316')) }}>
@@ -685,7 +685,7 @@ export default function SettingsClient({ initialSettings, initialStations, initi
       )}
 
       {tab === 'loyalty' && (
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 max-w-lg space-y-4">
+        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-3 sm:p-5 max-w-lg space-y-4">
           <h2 className="font-bold text-gray-800">ระบบแต้มสะสม</h2>
           <div className="bg-orange-50 rounded-xl p-3 text-sm text-orange-700 mb-2">
             ลูกค้าจะได้รับ 1 แต้มทุกการใช้จ่าย {settings.pointsPerBaht} บาท และ {settings.pointsPerBaht} แต้ม มีมูลค่า ฿{settings.pointsValue}
@@ -709,7 +709,7 @@ export default function SettingsClient({ initialSettings, initialStations, initi
       )}
 
       {tab === 'system' && (
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 max-w-lg space-y-4">
+        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-3 sm:p-5 max-w-lg space-y-4">
           <h2 className="font-bold text-gray-800">การตั้งค่าระบบ</h2>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">แจ้งเตือนเมื่อสต็อกเหลือน้อยกว่า</label>
@@ -781,8 +781,8 @@ function QRMenuTab({ settings }: { settings: Settings }) {
   }
 
   return (
-    <div className="space-y-6 max-w-3xl">
-      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+    <div className="space-y-4 sm:space-y-6 max-w-3xl">
+      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-3 sm:p-5">
         <h2 className="font-bold text-gray-800 mb-1">QR Code เมนูสำหรับลูกค้า</h2>
         <p className="text-sm text-gray-500 mb-5">
           ลูกค้าสแกน QR → ดูเมนูบนมือถือ → สั่งตรงเข้าระบบ (ปรากฏใน <strong>ออเดอร์</strong>)
@@ -805,7 +805,7 @@ function QRMenuTab({ settings }: { settings: Settings }) {
         </div>
 
         {/* Table grid */}
-        <div className="grid grid-cols-5 sm:grid-cols-8 md:grid-cols-10 gap-2 mb-5">
+        <div className="grid grid-cols-4 sm:grid-cols-8 md:grid-cols-10 gap-2 mb-5">
           {Array.from({ length: tableCount }, (_, i) => String(i + 1)).map(t => (
             <button
               key={t}
@@ -824,7 +824,7 @@ function QRMenuTab({ settings }: { settings: Settings }) {
 
         {/* Selected table QR */}
         {selectedTable && origin && (
-          <div className="border-2 border-orange-200 rounded-2xl p-5 bg-orange-50 flex flex-col sm:flex-row items-center gap-5">
+          <div className="border-2 border-orange-200 rounded-2xl p-3 sm:p-5 bg-orange-50 flex flex-col sm:flex-row items-center gap-3 sm:gap-5">
             <div className="bg-white p-3 rounded-xl shadow-sm">
               <QRCodeCanvas value={menuUrl(selectedTable)} size={160} />
             </div>
@@ -853,7 +853,7 @@ function QRMenuTab({ settings }: { settings: Settings }) {
       </div>
 
       {/* Print all button */}
-      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5">
+      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-3 sm:p-5">
         <h3 className="font-semibold text-gray-800 mb-2">พิมพ์ QR ทั้งหมด</h3>
         <p className="text-sm text-gray-500 mb-3">พิมพ์ QR code สำหรับทุกโต๊ะในครั้งเดียว</p>
         <button

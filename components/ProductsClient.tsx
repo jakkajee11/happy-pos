@@ -84,23 +84,23 @@ export default function ProductsClient({ initialProducts, initialCategories, ini
   const fmt = (n: number) => n.toLocaleString('th-TH')
 
   return (
-    <div className="p-6">
+    <div className="p-3 sm:p-4 lg:p-6">
       {/* Header */}
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 sm:gap-0 mb-6">
         <div>
           <h1 className="text-2xl font-bold text-gray-800">สินค้า / เมนู</h1>
           <p className="text-gray-500 text-sm">{products.length} รายการ</p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
           <button
             onClick={() => { setEditingCat(null); setCatForm({ name: '', icon: '📦', color: '#6B7280' }); setShowCatModal(true) }}
-            className="flex items-center gap-2 px-4 py-2 border border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 font-medium text-sm"
+            className="flex items-center gap-2 px-3 sm:px-4 py-2 border border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 font-medium text-sm"
           >
             จัดการหมวด
           </button>
           <button
             onClick={openNew}
-            className="flex items-center gap-2 px-4 py-2 bg-orange-500 text-white rounded-xl hover:bg-orange-600 font-medium"
+            className="flex items-center gap-2 px-3 sm:px-4 py-2 bg-orange-500 text-white rounded-xl hover:bg-orange-600 font-medium"
           >
             <Plus size={18} /> เพิ่มสินค้า
           </button>
@@ -135,17 +135,18 @@ export default function ProductsClient({ initialProducts, initialCategories, ini
 
       {/* Search */}
       <div className="relative mb-4">
-        <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+        <Search size={16} className="absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 text-gray-400" />
         <input
           value={search}
           onChange={e => setSearch(e.target.value)}
           placeholder="ค้นหาสินค้า..."
-          className="w-full pl-9 pr-4 py-2 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-orange-300"
+          className="w-full pl-9 pr-3 sm:pr-4 py-2 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-orange-300"
         />
       </div>
 
       {/* Product Table */}
       <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+        <div className="overflow-x-auto -mx-3 sm:mx-0">
         <table className="w-full text-sm">
           <thead>
             <tr className="bg-gray-50 text-gray-500 text-xs uppercase tracking-wider">
@@ -223,23 +224,24 @@ export default function ProductsClient({ initialProducts, initialCategories, ini
             })}
           </tbody>
         </table>
+        </div>
       </div>
 
       {/* Product Modal */}
       {showModal && (
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
           <div className="bg-white rounded-2xl w-full max-w-md shadow-2xl max-h-[90vh] overflow-y-auto">
-            <div className="sticky top-0 bg-white px-5 py-4 border-b border-gray-100 flex items-center justify-between">
+            <div className="sticky top-0 bg-white px-3 sm:px-5 py-4 border-b border-gray-100 flex items-center justify-between">
               <h3 className="font-bold text-gray-800">{editing ? 'แก้ไขสินค้า' : 'เพิ่มสินค้าใหม่'}</h3>
               <button onClick={() => setShowModal(false)}><X size={20} /></button>
             </div>
-            <div className="p-5 space-y-4">
+            <div className="p-3 sm:p-5 space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">ชื่อสินค้า *</label>
                 <input value={form.name} onChange={e => setForm({ ...form, name: e.target.value })}
                   className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-300" placeholder="ชื่อสินค้า" />
               </div>
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">ราคาขาย (฿) *</label>
                   <input type="number" value={form.price} onChange={e => setForm({ ...form, price: e.target.value })}
@@ -307,11 +309,11 @@ export default function ProductsClient({ initialProducts, initialCategories, ini
       {showCatModal && (
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
           <div className="bg-white rounded-2xl w-full max-w-sm shadow-2xl">
-            <div className="px-5 py-4 border-b border-gray-100 flex items-center justify-between">
+            <div className="px-3 sm:px-5 py-4 border-b border-gray-100 flex items-center justify-between">
               <h3 className="font-bold text-gray-800">{editingCat ? 'แก้ไขหมวด' : 'เพิ่มหมวดหมู่'}</h3>
               <button onClick={() => { setShowCatModal(false); setEditingCat(null) }}><X size={20} /></button>
             </div>
-            <div className="p-5 space-y-4">
+            <div className="p-3 sm:p-5 space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">ชื่อหมวด</label>
                 <input value={catForm.name} onChange={e => setCatForm({ ...catForm, name: e.target.value })}
@@ -319,7 +321,7 @@ export default function ProductsClient({ initialProducts, initialCategories, ini
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">ไอคอน</label>
-                <div className="flex flex-wrap gap-2">
+                <div className="flex flex-wrap gap-2 -mx-1 sm:mx-0">
                   {ICONS.map(icon => (
                     <button key={icon} onClick={() => setCatForm({ ...catForm, icon })}
                       className={clsx('w-9 h-9 rounded-xl text-xl flex items-center justify-center border-2 transition-all',
@@ -331,7 +333,7 @@ export default function ProductsClient({ initialProducts, initialCategories, ini
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">สี</label>
-                <div className="flex gap-2">
+                <div className="flex flex-wrap gap-2">
                   {COLORS.map(color => (
                     <button key={color} onClick={() => setCatForm({ ...catForm, color })}
                       className={clsx('w-7 h-7 rounded-full border-2 transition-all', catForm.color === color ? 'border-gray-800 scale-125' : 'border-transparent')}
@@ -345,9 +347,9 @@ export default function ProductsClient({ initialProducts, initialCategories, ini
                   <label className="block text-sm font-medium text-gray-700 mb-2">หมวดที่มีอยู่</label>
                   <div className="space-y-1 max-h-40 overflow-y-auto">
                     {categories.map(c => (
-                      <div key={c.id} className="flex items-center justify-between px-3 py-2 rounded-lg hover:bg-gray-50">
+                      <div key={c.id} className="flex flex-col sm:flex-row items-start sm:items-center justify-between px-3 py-2 rounded-lg hover:bg-gray-50 gap-2 sm:gap-0">
                         <span className="text-sm">{c.icon} {c.name}</span>
-                        <div className="flex gap-1">
+                        <div className="flex flex-wrap gap-1">
                           <button onClick={() => { setEditingCat(c); setCatForm({ name: c.name, icon: c.icon, color: c.color }) }}
                             className="p-1 text-gray-400 hover:text-orange-500"><Pencil size={13} /></button>
                           <button onClick={() => removeCat(c.id)}

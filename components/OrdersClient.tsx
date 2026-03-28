@@ -62,25 +62,25 @@ export default function OrdersClient({ initialOrders }: Props) {
     Math.floor((Date.now() - new Date(dt).getTime()) / 60000)
 
   return (
-    <div className="p-6">
+    <div className="p-3 sm:p-4 lg:p-6">
       {/* Header */}
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 sm:mb-6 gap-3">
         <div>
-          <h1 className="text-2xl font-bold text-gray-800">ออเดอร์ที่เปิดอยู่</h1>
-          <p className="text-gray-500 text-sm">{orders.length} โต๊ะ / ออเดอร์ที่รอชำระ</p>
+          <h1 className="text-xl sm:text-2xl font-bold text-gray-800">ออเดอร์ที่เปิดอยู่</h1>
+          <p className="text-gray-500 text-xs sm:text-sm">{orders.length} โต๊ะ / ออเดอร์ที่รอชำระ</p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex gap-2 w-full sm:w-auto">
           <button
             onClick={refresh}
             disabled={loading}
-            className="flex items-center gap-2 px-3 py-2 border border-gray-200 rounded-xl text-sm text-gray-600 hover:bg-gray-50 disabled:opacity-50"
+            className="flex items-center gap-2 px-2 sm:px-3 py-2 border border-gray-200 rounded-xl text-xs sm:text-sm text-gray-600 hover:bg-gray-50 disabled:opacity-50 flex-1 sm:flex-none justify-center"
           >
-            <RefreshCw size={15} className={loading ? 'animate-spin' : ''} />
-            รีเฟรช
+            <RefreshCw size={14} className={loading ? 'animate-spin' : ''} />
+            <span className="hidden sm:inline">รีเฟรช</span>
           </button>
           <button
             onClick={() => router.push('/pos')}
-            className="flex items-center gap-2 px-4 py-2 bg-orange-500 text-white rounded-xl font-medium text-sm hover:bg-orange-600"
+            className="flex items-center gap-2 px-3 sm:px-4 py-2 bg-orange-500 text-white rounded-xl font-medium text-xs sm:text-sm hover:bg-orange-600 flex-1 sm:flex-none justify-center"
           >
             + ออเดอร์ใหม่
           </button>
@@ -108,44 +108,44 @@ export default function OrdersClient({ initialOrders }: Props) {
               >
                 {/* Card Header */}
                 <div className={clsx(
-                  'px-4 pt-4 pb-3 border-b flex items-start justify-between',
+                  'px-3 sm:px-4 pt-3 sm:pt-4 pb-3 border-b flex items-start justify-between gap-2',
                   isOld ? 'border-red-100' : 'border-gray-100'
                 )}>
-                  <div>
+                  <div className="min-w-0">
                     <div className="flex items-center gap-2">
                       {order.tableNo ? (
-                        <span className="text-xl font-black text-gray-800">โต๊ะ {order.tableNo}</span>
+                        <span className="text-lg sm:text-xl font-black text-gray-800">โต๊ะ {order.tableNo}</span>
                       ) : (
-                        <span className="text-sm font-bold text-gray-600">Take Away</span>
+                        <span className="text-xs sm:text-sm font-bold text-gray-600">Take Away</span>
                       )}
                       {isOld && (
-                        <span className="text-xs bg-red-100 text-red-600 px-1.5 py-0.5 rounded-full font-medium">นาน!</span>
+                        <span className="text-xs bg-red-100 text-red-600 px-1.5 py-0.5 rounded-full font-medium whitespace-nowrap">นาน!</span>
                       )}
                     </div>
                     <p className="text-xs text-gray-400 font-mono mt-0.5">{order.orderNo}</p>
                   </div>
-                  <div className="text-right">
-                    <p className="text-lg font-bold text-orange-600">฿{fmt(order.total)}</p>
+                  <div className="text-right shrink-0">
+                    <p className="text-base sm:text-lg font-bold text-orange-600">฿{fmt(order.total)}</p>
                     <p className="text-xs text-gray-400 flex items-center gap-1 justify-end mt-0.5">
-                      <Clock size={11} />
+                      <Clock size={10} className="sm:w-3 sm:h-3" />
                       <TimeAgo createdAt={order.createdAt} />
                     </p>
                   </div>
                 </div>
 
                 {/* Items */}
-                <div className="px-4 py-3 space-y-1 max-h-40 overflow-y-auto">
+                <div className="px-3 sm:px-4 py-3 space-y-1 max-h-32 sm:max-h-40 overflow-y-auto">
                   {order.items.map((item, i) => (
-                    <div key={i} className="flex justify-between text-sm">
+                    <div key={i} className="flex justify-between text-xs sm:text-sm gap-2">
                       <span className="text-gray-700 truncate flex-1">
                         <span className="text-gray-400 text-xs">{item.qty}×</span> {item.productName}
                         {item.note && <span className="text-xs text-orange-500 ml-1">({item.note})</span>}
                       </span>
-                      <span className="text-gray-600 ml-2 shrink-0">฿{fmt(item.total)}</span>
+                      <span className="text-gray-600 shrink-0">฿{fmt(item.total)}</span>
                     </div>
                   ))}
                   {order.discount > 0 && (
-                    <div className="flex justify-between text-sm text-green-600">
+                    <div className="flex justify-between text-xs sm:text-sm text-green-600">
                       <span>ส่วนลด {order.discountNote && `(${order.discountNote})`}</span>
                       <span>-฿{fmt(order.discount)}</span>
                     </div>
@@ -159,16 +159,16 @@ export default function OrdersClient({ initialOrders }: Props) {
                 </div>
 
                 {/* Actions */}
-                <div className="px-4 pb-4 flex gap-2">
+                <div className="px-3 sm:px-4 pb-3 sm:pb-4 flex gap-2">
                   <button
                     onClick={() => resumeInPOS(order)}
-                    className="flex-1 py-2.5 bg-orange-500 text-white rounded-xl text-sm font-semibold hover:bg-orange-600 transition-colors"
+                    className="flex-1 py-2 sm:py-2.5 bg-orange-500 text-white rounded-xl text-xs sm:text-sm font-semibold hover:bg-orange-600 transition-colors min-h-[36px] sm:min-h-[40px]"
                   >
                     เปิด / ชำระ
                   </button>
                   <button
                     onClick={() => cancel(order.id, order.orderNo)}
-                    className="p-2.5 border border-gray-200 text-gray-400 rounded-xl hover:border-red-300 hover:text-red-500 transition-colors"
+                    className="p-2 sm:p-2.5 border border-gray-200 text-gray-400 rounded-xl hover:border-red-300 hover:text-red-500 transition-colors min-h-[36px] sm:min-h-[40px] flex items-center justify-center"
                   >
                     <Trash2 size={16} />
                   </button>

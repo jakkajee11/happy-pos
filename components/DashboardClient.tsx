@@ -47,7 +47,7 @@ export default function DashboardClient({ stats, dailyData, topProducts, payment
   }, [])
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="p-3 sm:p-4 lg:p-6 space-y-4 lg:space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
@@ -56,14 +56,15 @@ export default function DashboardClient({ stats, dailyData, topProducts, payment
             {new Date().toLocaleDateString('th-TH', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
           </p>
         </div>
-        <Link href="/pos" className="flex items-center gap-2 bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded-xl font-semibold transition-colors">
+        <Link href="/pos" className="flex items-center gap-2 bg-orange-500 hover:bg-orange-600 text-white px-3 py-2 rounded-xl font-semibold transition-colors text-sm sm:text-base">
           <ShoppingBag size={18} />
-          เปิดหน้าขาย
+          <span className="hidden sm:inline">เปิดหน้าขาย</span>
+          <span className="sm:hidden">ขาย</span>
         </Link>
       </div>
 
       {/* Stat cards */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-4">
         <StatCard
           title="ยอดขายวันนี้"
           value={`฿${fmt(stats.todayRevenue)}`}
@@ -112,11 +113,11 @@ export default function DashboardClient({ stats, dailyData, topProducts, payment
       </div>
 
       {/* Charts */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 sm:gap-4">
         {/* Revenue Chart */}
-        <div className="lg:col-span-2 bg-white rounded-2xl p-5 shadow-sm border border-gray-100">
-          <h2 className="font-semibold text-gray-800 mb-4">ยอดขาย 7 วันที่ผ่านมา</h2>
-          <ResponsiveContainer width="100%" height={200}>
+        <div className="lg:col-span-2 bg-white rounded-2xl p-3 sm:p-5 shadow-sm border border-gray-100">
+          <h2 className="font-semibold text-gray-800 mb-3 sm:mb-4 text-sm sm:text-base">ยอดขาย 7 วันที่ผ่านมา</h2>
+          <ResponsiveContainer width="100%" height={180}>
             <BarChart data={dailyData}>
               <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f3f4f6" />
               <XAxis dataKey="date" tick={{ fontSize: 12 }} axisLine={false} tickLine={false} />
@@ -128,8 +129,8 @@ export default function DashboardClient({ stats, dailyData, topProducts, payment
         </div>
 
         {/* Payment Breakdown */}
-        <div className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100">
-          <h2 className="font-semibold text-gray-800 mb-4">การชำระเงินวันนี้</h2>
+        <div className="bg-white rounded-2xl p-3 sm:p-5 shadow-sm border border-gray-100">
+          <h2 className="font-semibold text-gray-800 mb-3 sm:mb-4 text-sm sm:text-base">การชำระเงินวันนี้</h2>
           {Object.keys(paymentBreakdown).length === 0 ? (
             <div className="flex items-center justify-center h-40 text-gray-400 text-sm">ยังไม่มีรายการ</div>
           ) : (
@@ -149,9 +150,9 @@ export default function DashboardClient({ stats, dailyData, topProducts, payment
       </div>
 
       {/* Bottom section */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 sm:gap-4">
         {/* Recent Sales */}
-        <div className="lg:col-span-2 bg-white rounded-2xl p-5 shadow-sm border border-gray-100">
+        <div className="lg:col-span-2 bg-white rounded-2xl p-3 sm:p-5 shadow-sm border border-gray-100">
           <div className="flex items-center justify-between mb-4">
             <h2 className="font-semibold text-gray-800">รายการล่าสุด</h2>
             <Link href="/reports" className="text-orange-500 text-sm flex items-center gap-1 hover:underline">
@@ -233,12 +234,12 @@ function StatCard({ title, value, sub, icon, color }: {
   title: string; value: string; sub: string; icon: React.ReactNode; color: string
 }) {
   return (
-    <div className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100">
+    <div className="bg-white rounded-2xl p-3 sm:p-4 shadow-sm border border-gray-100">
       <div className="flex items-start justify-between">
-        <div>
-          <p className="text-gray-500 text-xs mb-1">{title}</p>
-          <p className="text-xl font-bold text-gray-800">{value}</p>
-          <p className="text-xs text-gray-400 mt-1">{sub}</p>
+        <div className="min-w-0 flex-1">
+          <p className="text-gray-500 text-[10px] sm:text-xs mb-1 truncate">{title}</p>
+          <p className="text-lg sm:text-xl font-bold text-gray-800 truncate">{value}</p>
+          <p className="text-[10px] sm:text-xs text-gray-400 mt-1 truncate">{sub}</p>
         </div>
         <div className={`p-2 rounded-xl ${color}`}>{icon}</div>
       </div>

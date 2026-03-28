@@ -128,17 +128,17 @@ ${topProducts.length > 0 ? `
   ] as const
 
   return (
-    <div className="p-6 max-w-4xl mx-auto" ref={printRef}>
+    <div className="p-3 sm:p-4 lg:p-6 max-w-4xl mx-auto" ref={printRef}>
       {/* Header */}
-      <div className="flex items-start justify-between mb-6">
+      <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between mb-4 sm:mb-6 gap-3 sm:gap-0">
         <div>
-          <h1 className="text-2xl font-bold text-gray-800">ปิดยอดประจำวัน</h1>
-          <p className="text-gray-500 text-sm mt-0.5">{displayDate}</p>
+          <h1 className="text-xl sm:text-2xl font-bold text-gray-800">ปิดยอดประจำวัน</h1>
+          <p className="text-gray-500 text-xs sm:text-sm mt-0.5">{displayDate}</p>
         </div>
         <button
           onClick={handlePrint}
           disabled={printing || sales.length === 0}
-          className="flex items-center gap-2 px-4 py-2 bg-gray-800 text-white rounded-xl hover:bg-gray-900 disabled:bg-gray-300 disabled:cursor-not-allowed font-medium text-sm"
+          className="flex items-center gap-2 px-3 sm:px-4 py-2 bg-gray-800 text-white rounded-xl hover:bg-gray-900 disabled:bg-gray-300 disabled:cursor-not-allowed font-medium text-xs sm:text-sm w-full sm:w-auto justify-center"
         >
           🖨️ {printing ? 'กำลังพิมพ์...' : 'พิมพ์สรุปยอด'}
         </button>
@@ -152,34 +152,34 @@ ${topProducts.length > 0 ? `
       ) : (
         <>
           {/* KPI Cards */}
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-            <div className="bg-orange-50 border border-orange-200 rounded-2xl p-4">
-              <p className="text-xs text-orange-600 font-medium mb-1">ยอดสุทธิ</p>
-              <p className="text-2xl font-bold text-orange-700">฿{fmt(totalRevenue)}</p>
-              {totalDiscount > 0 && <p className="text-xs text-orange-500 mt-1">ลด ฿{fmt(totalDiscount)}</p>}
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-4 mb-4 sm:mb-6">
+            <div className="bg-orange-50 border border-orange-200 rounded-2xl p-3 sm:p-5">
+              <p className="text-[10px] sm:text-xs text-orange-600 font-medium mb-1">ยอดสุทธิ</p>
+              <p className="text-lg sm:text-xl font-bold text-orange-700">฿{fmt(totalRevenue)}</p>
+              {totalDiscount > 0 && <p className="text-[10px] sm:text-xs text-orange-500 mt-1">ลด ฿{fmt(totalDiscount)}</p>}
             </div>
-            <div className="bg-blue-50 border border-blue-200 rounded-2xl p-4">
-              <p className="text-xs text-blue-600 font-medium mb-1">จำนวนบิล</p>
-              <p className="text-2xl font-bold text-blue-700">{fmtInt(txCount)}</p>
-              <p className="text-xs text-blue-500 mt-1">เฉลี่ย ฿{txCount > 0 ? fmt(totalRevenue / txCount) : '0'}/บิล</p>
+            <div className="bg-blue-50 border border-blue-200 rounded-2xl p-3 sm:p-5">
+              <p className="text-[10px] sm:text-xs text-blue-600 font-medium mb-1">จำนวนบิล</p>
+              <p className="text-lg sm:text-xl font-bold text-blue-700">{fmtInt(txCount)}</p>
+              <p className="text-[10px] sm:text-xs text-blue-500 mt-1">เฉลี่ย ฿{txCount > 0 ? fmt(totalRevenue / txCount) : '0'}/บิล</p>
             </div>
-            <div className="bg-green-50 border border-green-200 rounded-2xl p-4">
-              <p className="text-xs text-green-600 font-medium mb-1">เงินสดในลิ้นชัก</p>
-              <p className="text-2xl font-bold text-green-700">฿{fmt(cashNet)}</p>
-              <p className="text-xs text-green-500 mt-1">รับ {fmt(cashIn)} / ทอน {fmt(cashOut)}</p>
+            <div className="bg-green-50 border border-green-200 rounded-2xl p-3 sm:p-5">
+              <p className="text-[10px] sm:text-xs text-green-600 font-medium mb-1">เงินสดในลิ้นชัก</p>
+              <p className="text-lg sm:text-xl font-bold text-green-700">฿{fmt(cashNet)}</p>
+              <p className="text-[10px] sm:text-xs text-green-500 mt-1">รับ {fmt(cashIn)} / ทอน {fmt(cashOut)}</p>
             </div>
-            <div className="bg-purple-50 border border-purple-200 rounded-2xl p-4">
-              <p className="text-xs text-purple-600 font-medium mb-1">รายการสินค้า</p>
-              <p className="text-2xl font-bold text-purple-700">{fmtInt(topProducts.length)}</p>
-              <p className="text-xs text-purple-500 mt-1">ประเภทที่ขายได้</p>
+            <div className="bg-purple-50 border border-purple-200 rounded-2xl p-3 sm:p-5">
+              <p className="text-[10px] sm:text-xs text-purple-600 font-medium mb-1">รายการสินค้า</p>
+              <p className="text-lg sm:text-xl font-bold text-purple-700">{fmtInt(topProducts.length)}</p>
+              <p className="text-[10px] sm:text-xs text-purple-500 mt-1">ประเภทที่ขายได้</p>
             </div>
           </div>
 
           {/* Payment breakdown + Hourly chart side by side */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-4 mb-4 sm:mb-6">
             {/* Payment method */}
-            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5">
-              <h2 className="font-bold text-gray-800 mb-4">แยกตามวิธีชำระ</h2>
+            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-3 sm:p-5">
+              <h2 className="font-bold text-gray-800 mb-4 text-sm sm:text-base">แยกตามวิธีชำระ</h2>
               <div className="space-y-3">
                 {METHODS.map(m => {
                   const group = byMethod[m.key as keyof typeof byMethod]
@@ -208,8 +208,8 @@ ${topProducts.length > 0 ? `
             </div>
 
             {/* Hourly chart */}
-            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5">
-              <h2 className="font-bold text-gray-800 mb-4">ยอดรายชั่วโมง</h2>
+            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-3 sm:p-5">
+              <h2 className="font-bold text-gray-800 mb-4 text-sm sm:text-base">ยอดรายชั่วโมง</h2>
               <div className="flex items-end gap-1 h-32">
                 {Array.from({ length: 24 }, (_, h) => {
                   const val = hourly[h] || 0
@@ -234,11 +234,13 @@ ${topProducts.length > 0 ? `
 
           {/* Top Products */}
           {topProducts.length > 0 && (
-            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 mb-6">
-              <h2 className="font-bold text-gray-800 mb-4">สินค้าที่ขายได้วันนี้</h2>
-              <table className="w-full text-sm">
+            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-3 sm:p-5 mb-4 sm:mb-6">
+              <h2 className="font-bold text-gray-800 mb-4 text-sm sm:text-base">สินค้าที่ขายได้วันนี้</h2>
+              <div className="overflow-x-auto -mx-3 sm:mx-0">
+                <div className="px-3 sm:px-0">
+              <table className="w-full text-xs sm:text-sm">
                 <thead>
-                  <tr className="text-xs text-gray-400 uppercase tracking-wide border-b border-gray-100">
+                  <tr className="text-[10px] sm:text-xs text-gray-400 uppercase tracking-wide border-b border-gray-100">
                     <th className="text-left pb-2">#</th>
                     <th className="text-left pb-2">สินค้า</th>
                     <th className="text-right pb-2">จำนวน</th>
@@ -270,16 +272,20 @@ ${topProducts.length > 0 ? `
                   </tr>
                 </tfoot>
               </table>
+                </div>
+              </div>
             </div>
           )}
 
           {/* Recent transactions */}
-          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5">
-            <h2 className="font-bold text-gray-800 mb-4">บิลทั้งหมดวันนี้ ({txCount} บิล)</h2>
-            <div className="overflow-y-auto max-h-64">
-              <table className="w-full text-sm">
+          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-3 sm:p-5">
+            <h2 className="font-bold text-gray-800 mb-4 text-sm sm:text-base">บิลทั้งหมดวันนี้ ({txCount} บิล)</h2>
+            <div className="overflow-x-auto -mx-3 sm:mx-0">
+              <div className="px-3 sm:px-0">
+              <div className="overflow-y-auto max-h-64">
+              <table className="w-full text-xs sm:text-sm">
                 <thead className="sticky top-0 bg-white">
-                  <tr className="text-xs text-gray-400 uppercase tracking-wide border-b border-gray-100">
+                  <tr className="text-[10px] sm:text-xs text-gray-400 uppercase tracking-wide border-b border-gray-100">
                     <th className="text-left pb-2">บิล</th>
                     <th className="text-left pb-2 hidden sm:table-cell">เวลา</th>
                     <th className="text-left pb-2 hidden md:table-cell">โต๊ะ</th>
@@ -305,6 +311,8 @@ ${topProducts.length > 0 ? `
                   ))}
                 </tbody>
               </table>
+              </div>
+              </div>
             </div>
           </div>
         </>

@@ -50,14 +50,14 @@ export default function InventoryClient({ initialProducts, categories, recentLog
   const typeColor = { in: 'text-green-600', out: 'text-red-600', adjust: 'text-blue-600' }
 
   return (
-    <div className="p-6">
-      <div className="flex items-center justify-between mb-6">
+    <div className="p-3 sm:p-4 lg:p-6">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6 gap-3 sm:gap-0">
         <div>
           <h1 className="text-2xl font-bold text-gray-800">คลังสินค้า</h1>
           <p className="text-gray-500 text-sm">{tracked.length} รายการที่ติดตามสต็อก</p>
         </div>
         {lowStock.length > 0 && (
-          <div className="flex items-center gap-2 bg-red-50 text-red-600 px-4 py-2 rounded-xl text-sm font-medium">
+          <div className="flex items-center gap-2 bg-red-50 text-red-600 px-3 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-medium whitespace-nowrap">
             <AlertTriangle size={16} />
             ใกล้หมด {lowStock.length} รายการ
           </div>
@@ -65,10 +65,10 @@ export default function InventoryClient({ initialProducts, categories, recentLog
       </div>
 
       {/* Tabs */}
-      <div className="flex gap-1 mb-4 bg-gray-100 rounded-xl p-1 w-fit">
+      <div className="flex gap-1 mb-4 bg-gray-100 rounded-xl p-1 w-fit overflow-x-auto">
         {[{ id: 'stock', label: 'สต็อก', icon: Boxes }, { id: 'log', label: 'ประวัติ', icon: History }].map(t => (
           <button key={t.id} onClick={() => setTab(t.id as any)}
-            className={clsx('flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all',
+            className={clsx('flex items-center gap-2 px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-medium transition-all whitespace-nowrap',
               tab === t.id ? 'bg-white shadow-sm text-gray-800' : 'text-gray-500 hover:text-gray-700')}>
             <t.icon size={15} /> {t.label}
           </button>
@@ -79,7 +79,7 @@ export default function InventoryClient({ initialProducts, categories, recentLog
         <>
           {/* Low stock alert */}
           {lowStock.length > 0 && (
-            <div className="bg-red-50 border border-red-100 rounded-2xl p-4 mb-4">
+            <div className="bg-red-50 border border-red-100 rounded-2xl p-3 sm:p-4 mb-4">
               <h3 className="font-semibold text-red-700 mb-2 flex items-center gap-2">
                 <AlertTriangle size={16} /> สินค้าใกล้หมด / หมด
               </h3>
@@ -105,13 +105,14 @@ export default function InventoryClient({ initialProducts, categories, recentLog
           </div>
 
           <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+            <div className="overflow-x-auto -mx-3 sm:mx-0">
             <table className="w-full text-sm">
               <thead>
                 <tr className="bg-gray-50 text-gray-500 text-xs uppercase">
-                  <th className="text-left px-4 py-3">สินค้า</th>
-                  <th className="text-center px-4 py-3">สต็อกปัจจุบัน</th>
-                  <th className="text-center px-4 py-3">สถานะ</th>
-                  <th className="text-center px-4 py-3">จัดการ</th>
+                  <th className="text-left px-3 sm:px-4 py-3">สินค้า</th>
+                  <th className="text-center px-3 sm:px-4 py-3">สต็อกปัจจุบัน</th>
+                  <th className="text-center px-3 sm:px-4 py-3 hidden sm:table-cell">สถานะ</th>
+                  <th className="text-center px-3 sm:px-4 py-3">จัดการ</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-50">
@@ -122,7 +123,7 @@ export default function InventoryClient({ initialProducts, categories, recentLog
                   const isLow = p.stock <= lowStockAlert
                   return (
                     <tr key={p.id} className="hover:bg-gray-50">
-                      <td className="px-4 py-3">
+                      <td className="px-3 sm:px-4 py-3">
                         <div className="flex items-center gap-3">
                           <div className="w-8 h-8 rounded-lg flex items-center justify-center text-lg" style={{ backgroundColor: (cat?.color || '#888') + '20' }}>
                             {cat?.icon || '📦'}
@@ -133,10 +134,10 @@ export default function InventoryClient({ initialProducts, categories, recentLog
                           </div>
                         </div>
                       </td>
-                      <td className="px-4 py-3 text-center">
+                      <td className="px-3 sm:px-4 py-3 text-center">
                         <span className={clsx('text-2xl font-bold', isLow ? 'text-red-600' : 'text-gray-800')}>{p.stock}</span>
                       </td>
-                      <td className="px-4 py-3 text-center">
+                      <td className="px-3 sm:px-4 py-3 text-center hidden sm:table-cell">
                         <span className={clsx('text-xs px-2 py-1 rounded-full font-medium',
                           p.stock === 0 ? 'bg-red-100 text-red-700' :
                           isLow ? 'bg-yellow-100 text-yellow-700' :
@@ -144,8 +145,8 @@ export default function InventoryClient({ initialProducts, categories, recentLog
                           {p.stock === 0 ? 'หมด' : isLow ? 'ใกล้หมด' : 'ปกติ'}
                         </span>
                       </td>
-                      <td className="px-4 py-3">
-                        <div className="flex items-center justify-center gap-1">
+                      <td className="px-3 sm:px-4 py-3">
+                        <div className="flex items-center justify-center gap-1 flex-wrap">
                           <button onClick={() => openAdjust(p, 'in')}
                             className="flex items-center gap-1 px-2 py-1.5 text-xs bg-green-100 text-green-700 rounded-lg hover:bg-green-200 font-medium">
                             <Plus size={13} /> รับเข้า
@@ -165,20 +166,22 @@ export default function InventoryClient({ initialProducts, categories, recentLog
                 })}
               </tbody>
             </table>
+            </div>
           </div>
         </>
       )}
 
       {tab === 'log' && (
         <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+          <div className="overflow-x-auto -mx-3 sm:mx-0">
           <table className="w-full text-sm">
             <thead>
               <tr className="bg-gray-50 text-gray-500 text-xs uppercase">
-                <th className="text-left px-4 py-3">วันที่</th>
-                <th className="text-left px-4 py-3">สินค้า</th>
-                <th className="text-center px-4 py-3">ประเภท</th>
-                <th className="text-center px-4 py-3">จำนวน</th>
-                <th className="text-left px-4 py-3 hidden md:table-cell">หมายเหตุ</th>
+                <th className="text-left px-3 sm:px-4 py-3 hidden sm:table-cell">วันที่</th>
+                <th className="text-left px-3 sm:px-4 py-3">สินค้า</th>
+                <th className="text-center px-3 sm:px-4 py-3">ประเภท</th>
+                <th className="text-center px-3 sm:px-4 py-3">จำนวน</th>
+                <th className="text-left px-3 sm:px-4 py-3 hidden md:table-cell">หมายเหตุ</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-50">
@@ -186,11 +189,11 @@ export default function InventoryClient({ initialProducts, categories, recentLog
                 <tr><td colSpan={5} className="text-center py-12 text-gray-400">ยังไม่มีประวัติการเคลื่อนไหว</td></tr>
               ) : logs.map(log => (
                 <tr key={log.id} className="hover:bg-gray-50">
-                  <td className="px-4 py-3 text-gray-500 text-xs">
+                  <td className="px-3 sm:px-4 py-3 text-gray-500 text-xs hidden sm:table-cell">
                     {new Date(log.createdAt).toLocaleDateString('th-TH', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}
                   </td>
-                  <td className="px-4 py-3 font-medium text-gray-800">{log.productName}</td>
-                  <td className="px-4 py-3 text-center">
+                  <td className="px-3 sm:px-4 py-3 font-medium text-gray-800">{log.productName}</td>
+                  <td className="px-3 sm:px-4 py-3 text-center">
                     <span className={clsx('text-xs px-2 py-1 rounded-full font-medium',
                       log.type === 'in' ? 'bg-green-100 text-green-700' :
                       log.type === 'out' ? 'bg-red-100 text-red-700' :
@@ -198,21 +201,22 @@ export default function InventoryClient({ initialProducts, categories, recentLog
                       {log.type === 'in' ? 'รับเข้า' : log.type === 'out' ? 'ตัดออก' : 'ปรับสต็อก'}
                     </span>
                   </td>
-                  <td className={clsx('px-4 py-3 text-center font-bold', log.type === 'in' ? 'text-green-600' : log.type === 'out' ? 'text-red-600' : 'text-blue-600')}>
+                  <td className={clsx('px-3 sm:px-4 py-3 text-center font-bold', log.type === 'in' ? 'text-green-600' : log.type === 'out' ? 'text-red-600' : 'text-blue-600')}>
                     {log.type === 'in' ? '+' : log.type === 'out' ? '-' : ''}{log.qty}
                   </td>
-                  <td className="px-4 py-3 text-gray-500 hidden md:table-cell">{log.note || '-'}</td>
+                  <td className="px-3 sm:px-4 py-3 text-gray-500 hidden md:table-cell">{log.note || '-'}</td>
                 </tr>
               ))}
             </tbody>
           </table>
+          </div>
         </div>
       )}
 
       {/* Adjust Modal */}
       {showAdjust && selected && (
-        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl w-full max-w-sm shadow-2xl p-5">
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-3 sm:p-4">
+          <div className="bg-white rounded-2xl w-full max-w-sm shadow-2xl p-4 sm:p-5">
             <h3 className="font-bold text-gray-800 mb-1">{typeLabel[adjustType]}</h3>
             <p className="text-sm text-gray-500 mb-4">{selected.name} (ปัจจุบัน: {selected.stock})</p>
             <div className="space-y-3">

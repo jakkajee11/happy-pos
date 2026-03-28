@@ -1,6 +1,6 @@
 'use client'
 import { useState, useRef, useCallback, useEffect } from 'react'
-import { Search, X, Plus, Minus, Trash2, User, Tag, Printer, CheckCircle, ChevronLeft, ScanLine, UtensilsCrossed, BookmarkCheck, ClipboardList } from 'lucide-react'
+import { Search, X, Plus, Minus, Trash2, User, Tag, Printer, CheckCircle, ChevronLeft, ScanLine, UtensilsCrossed, BookmarkCheck, ClipboardList, ShoppingCart } from 'lucide-react'
 import dynamic from 'next/dynamic'
 import { useRouter } from 'next/navigation'
 
@@ -298,19 +298,21 @@ export default function POSClient({ initialProducts, categories, members, promot
     )
   }
 
+  const [showMobileCart, setShowMobileCart] = useState(false)
+
   return (
-    <div className="flex h-screen bg-gray-50">
+    <div className="flex flex-col md:flex-row h-screen bg-gray-50">
       {/* Left: Products */}
       <div className="flex-1 flex flex-col min-w-0">
         {/* Search bar */}
-        <div className="bg-white border-b border-gray-200 px-4 py-3 flex gap-2">
+        <div className="bg-white border-b border-gray-200 px-3 sm:px-4 py-2 sm:py-3 flex gap-2">
           <div className="flex-1 relative">
             <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
             <input
               ref={searchRef}
               value={search}
               onChange={e => setSearch(e.target.value)}
-              placeholder="ค้นหาสินค้า หรือสแกนบาร์โค้ด..."
+              placeholder="ค้นหาสินค้า..."
               className="w-full pl-9 pr-4 py-2 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-orange-300"
             />
             {search && (
@@ -325,12 +327,12 @@ export default function POSClient({ initialProducts, categories, members, promot
             title="คลิกแล้วสแกนบาร์โค้ด"
           >
             <ScanLine size={16} />
-            บาร์โค้ด
+            <span className="hidden sm:inline">บาร์โค้ด</span>
           </button>
         </div>
 
         {/* Categories */}
-        <div className="bg-white border-b border-gray-200 px-4 py-2 flex gap-2 overflow-x-auto">
+        <div className="bg-white border-b border-gray-200 px-3 sm:px-4 py-2 flex gap-1.5 sm:gap-2 overflow-x-auto">
           <button
             onClick={() => setSelectedCat('all')}
             className={clsx(
@@ -355,14 +357,14 @@ export default function POSClient({ initialProducts, categories, members, promot
         </div>
 
         {/* Product Grid */}
-        <div className="flex-1 overflow-y-auto p-4">
+        <div className="flex-1 overflow-y-auto p-2 sm:p-4 pb-20 md:pb-4">
           {filteredProducts.length === 0 ? (
             <div className="text-center text-gray-400 mt-20">
               <p className="text-4xl mb-2">🔍</p>
               <p>ไม่พบสินค้า</p>
             </div>
           ) : (
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
+            <div className="grid grid-cols-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-5 gap-2 sm:gap-3">
               {filteredProducts.map(product => {
                 const inCart = cart.find(i => i.productId === product.id)
                 const outOfStock = product.trackStock && product.stock <= 0
@@ -372,7 +374,7 @@ export default function POSClient({ initialProducts, categories, members, promot
                     onClick={() => !outOfStock && addToCart(product)}
                     disabled={outOfStock}
                     className={clsx(
-                      'pos-btn relative bg-white rounded-2xl p-3 text-left shadow-sm border transition-all duration-150',
+                      'pos-btn relative bg-white rounded-xl sm:rounded-2xl p-2 sm:p-3 text-left shadow-sm border transition-all duration-150',
                       outOfStock
                         ? 'opacity-40 cursor-not-allowed border-gray-200'
                         : 'border-gray-100 hover:border-orange-300 hover:shadow-md active:scale-95',
@@ -381,13 +383,13 @@ export default function POSClient({ initialProducts, categories, members, promot
                   >
                     {/* Category color dot */}
                     <div
-                      className="w-10 h-10 rounded-xl flex items-center justify-center text-xl mb-2"
+                      className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl flex items-center justify-center text-lg sm:text-xl mb-1 sm:mb-2"
                       style={{ backgroundColor: categories.find(c => c.id === product.categoryId)?.color + '20' }}
                     >
                       {categories.find(c => c.id === product.categoryId)?.icon || '📦'}
                     </div>
-                    <p className="text-sm font-medium text-gray-800 leading-tight line-clamp-2">{product.name}</p>
-                    <p className="text-base font-bold text-orange-600 mt-1">฿{fmt(product.price)}</p>
+                    <p className="text-xs sm:text-sm font-medium text-gray-800 leading-tight line-clamp-2">{product.name}</p>
+                    <p className="text-sm sm:text-base font-bold text-orange-600 mt-0.5 sm:mt-1">฿{fmt(product.price)}</p>
                     {product.trackStock && (
                       <p className={clsx('text-xs mt-0.5', product.stock <= 10 ? 'text-red-500' : 'text-gray-400')}>
                         สต็อก: {product.stock}
@@ -411,16 +413,48 @@ export default function POSClient({ initialProducts, categories, members, promot
         </div>
       </div>
 
+      {/* Mobile floating cart button */}
+      {!showMobileCart && (
+        <button
+          onClick={() => setShowMobileCart(true)}
+          className="md:hidden fixed bottom-4 right-4 z-40 bg-orange-500 text-white rounded-full shadow-lg shadow-orange-300 flex items-center gap-2 px-5 py-3.5 font-bold text-sm active:scale-95 transition-transform"
+        >
+          <ShoppingCart size={20} />
+          {cart.length > 0 ? `ตะกร้า (${cart.length}) ฿${fmt(total)}` : 'ตะกร้า'}
+        </button>
+      )}
+
+      {/* Mobile cart overlay */}
+      {showMobileCart && (
+        <div className="md:hidden fixed inset-0 bg-black/40 z-40" onClick={() => setShowMobileCart(false)} />
+      )}
+
       {/* Right: Cart */}
-      <div className="w-80 xl:w-96 bg-white border-l border-gray-200 flex flex-col shadow-xl">
+      <div className={clsx(
+        'bg-white border-l border-gray-200 flex flex-col shadow-xl',
+        // Desktop: fixed sidebar
+        'hidden md:flex md:w-80 xl:w-96',
+        // Mobile: slide-up panel
+        showMobileCart && '!flex fixed inset-x-0 bottom-0 z-50 rounded-t-2xl max-h-[85vh] md:relative md:inset-auto md:rounded-none md:max-h-none'
+      )}>
+        {/* Mobile drag handle */}
+        <div className="md:hidden flex justify-center pt-2 pb-1">
+          <div className="w-10 h-1 bg-gray-300 rounded-full" />
+        </div>
+
         {/* Cart Header */}
-        <div className="px-4 py-3 border-b border-gray-100 flex items-center justify-between">
-          <h2 className="font-bold text-gray-800">ตะกร้า ({cart.length} รายการ)</h2>
-          {cart.length > 0 && (
-            <button onClick={clearCart} className="text-red-400 hover:text-red-600 text-sm flex items-center gap-1">
-              <Trash2 size={14} /> ล้าง
+        <div className="px-4 py-2 sm:py-3 border-b border-gray-100 flex items-center justify-between">
+          <h2 className="font-bold text-gray-800 text-sm sm:text-base">ตะกร้า ({cart.length} รายการ)</h2>
+          <div className="flex items-center gap-2">
+            {cart.length > 0 && (
+              <button onClick={clearCart} className="text-red-400 hover:text-red-600 text-sm flex items-center gap-1">
+                <Trash2 size={14} /> ล้าง
+              </button>
+            )}
+            <button onClick={() => setShowMobileCart(false)} className="md:hidden text-gray-400 hover:text-gray-600 p-1">
+              <X size={18} />
             </button>
-          )}
+          </div>
         </div>
 
         {/* Table No */}

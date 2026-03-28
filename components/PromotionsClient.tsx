@@ -52,8 +52,8 @@ export default function PromotionsClient({ initialPromotions }: Props) {
   const typeColor = { percent: 'bg-purple-100 text-purple-700', amount: 'bg-blue-100 text-blue-700', buy_x_get_y: 'bg-green-100 text-green-700' }
 
   return (
-    <div className="p-6">
-      <div className="flex items-center justify-between mb-6">
+    <div className="p-3 sm:p-4 lg:p-6">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 sm:gap-0 mb-6">
         <div>
           <h1 className="text-2xl font-bold text-gray-800">โปรโมชั่น & ส่วนลด</h1>
           <p className="text-gray-500 text-sm">{promos.length} รายการ · เปิดใช้ {promos.filter(p => p.isActive).length} รายการ</p>
@@ -63,7 +63,7 @@ export default function PromotionsClient({ initialPromotions }: Props) {
         </button>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
         {promos.length === 0 ? (
           <div className="col-span-3 text-center text-gray-400 py-16">
             <Tag size={40} className="mx-auto mb-3 opacity-30" />
@@ -71,7 +71,7 @@ export default function PromotionsClient({ initialPromotions }: Props) {
             <p className="text-sm mt-1">กดปุ่ม "เพิ่มโปรโมชั่น" เพื่อสร้างใหม่</p>
           </div>
         ) : promos.map(p => (
-          <div key={p.id} className={clsx('bg-white rounded-2xl p-4 shadow-sm border transition-all', p.isActive ? 'border-gray-100' : 'border-gray-200 opacity-60')}>
+          <div key={p.id} className={clsx('bg-white rounded-2xl p-3 sm:p-5 shadow-sm border transition-all', p.isActive ? 'border-gray-100' : 'border-gray-200 opacity-60')}>
             <div className="flex items-start justify-between mb-3">
               <div className="flex items-center gap-2">
                 <div className="w-8 h-8 bg-orange-100 rounded-xl flex items-center justify-center">
@@ -114,11 +114,11 @@ export default function PromotionsClient({ initialPromotions }: Props) {
       {showModal && (
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
           <div className="bg-white rounded-2xl w-full max-w-md shadow-2xl max-h-[90vh] overflow-y-auto">
-            <div className="sticky top-0 bg-white px-5 py-4 border-b border-gray-100 flex items-center justify-between">
+            <div className="sticky top-0 bg-white px-3 sm:px-5 py-4 border-b border-gray-100 flex items-center justify-between">
               <h3 className="font-bold text-gray-800">{editing ? 'แก้ไขโปรโมชั่น' : 'เพิ่มโปรโมชั่น'}</h3>
               <button onClick={() => setShowModal(false)}><X size={20} /></button>
             </div>
-            <div className="p-5 space-y-4">
+            <div className="p-3 sm:p-5 space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">ชื่อโปรโมชั่น *</label>
                 <input value={form.name} onChange={e => setForm({ ...form, name: e.target.value })}
@@ -126,10 +126,10 @@ export default function PromotionsClient({ initialPromotions }: Props) {
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">ประเภทส่วนลด</label>
-                <div className="grid grid-cols-3 gap-2">
+                <div className="grid grid-cols-3 gap-1.5 sm:gap-2">
                   {[{ v: 'percent', l: 'ลด %' }, { v: 'amount', l: 'ลดราคา (฿)' }, { v: 'buy_x_get_y', l: 'ซื้อแถม' }].map(t => (
                     <button key={t.v} onClick={() => setForm({ ...form, type: t.v })}
-                      className={clsx('py-2 rounded-xl text-sm font-medium border-2 transition-all',
+                      className={clsx('py-2 rounded-xl text-xs sm:text-sm font-medium border-2 transition-all',
                         form.type === t.v ? 'border-orange-500 bg-orange-50 text-orange-700' : 'border-gray-200 text-gray-600')}>
                       {t.l}
                     </button>
@@ -137,7 +137,7 @@ export default function PromotionsClient({ initialPromotions }: Props) {
                 </div>
               </div>
               {form.type === 'buy_x_get_y' ? (
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">ซื้อกี่ชิ้น (X)</label>
                     <input type="number" min="1" value={form.buyQty} onChange={e => setForm({ ...form, buyQty: e.target.value })}
@@ -153,7 +153,7 @@ export default function PromotionsClient({ initialPromotions }: Props) {
                   </div>
                 </div>
               ) : (
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
                       {form.type === 'percent' ? 'ลด (%)' : 'ลดราคา (฿)'}
@@ -180,7 +180,7 @@ export default function PromotionsClient({ initialPromotions }: Props) {
                 <input value={form.code} onChange={e => setForm({ ...form, code: e.target.value.toUpperCase() })}
                   className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-orange-300" placeholder="SAVE20" />
               </div>
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">วันเริ่ม</label>
                   <input type="date" value={form.startDate} onChange={e => setForm({ ...form, startDate: e.target.value })}

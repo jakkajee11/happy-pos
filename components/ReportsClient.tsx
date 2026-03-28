@@ -93,8 +93,8 @@ export default function ReportsClient({ allSales, products }: Props) {
   }
 
   return (
-    <div className="p-6">
-      <div className="flex flex-wrap items-center justify-between gap-3 mb-6">
+    <div className="p-3 sm:p-4 lg:p-6">
+      <div className="flex flex-wrap items-center justify-between gap-2 sm:gap-3 mb-6">
         <div>
           <h1 className="text-2xl font-bold text-gray-800">รายงาน</h1>
           <p className="text-gray-500 text-sm">วิเคราะห์ยอดขายและประสิทธิภาพ</p>
@@ -102,31 +102,31 @@ export default function ReportsClient({ allSales, products }: Props) {
         <div className="flex items-center gap-2 flex-wrap">
           {(['today', 'week', 'month', 'year'] as const).map(r => (
             <button key={r} onClick={() => setRange(r)}
-              className={clsx('px-4 py-1.5 rounded-full text-sm font-medium transition-colors',
+              className={clsx('px-2 sm:px-4 py-1 sm:py-2 rounded-full text-xs sm:text-sm font-medium transition-colors',
                 range === r ? 'bg-orange-500 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200')}>
               {{ today: 'วันนี้', week: '7 วัน', month: 'เดือนนี้', year: 'ปีนี้' }[r]}
             </button>
           ))}
-          <button onClick={exportCsv} className="flex items-center gap-1.5 px-3 py-1.5 border border-gray-300 rounded-full text-sm text-gray-600 hover:bg-gray-50">
+          <button onClick={exportCsv} className="flex items-center gap-1.5 px-2 sm:px-3 py-1 sm:py-1.5 border border-gray-300 rounded-full text-xs sm:text-sm text-gray-600 hover:bg-gray-50">
             <FileDown size={14} /> Export CSV
           </button>
         </div>
       </div>
 
       {/* Summary Cards */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-4 mb-6">
         {[
           { label: 'รายได้รวม', value: `฿${fmt(revenue)}`, icon: TrendingUp, color: 'bg-orange-50 text-orange-600', sub: `${orders} ออเดอร์` },
           { label: 'กำไรสุทธิ', value: `฿${fmt(profit)}`, icon: DollarSign, color: 'bg-green-50 text-green-600', sub: `${revenue > 0 ? ((profit / revenue) * 100).toFixed(1) : 0}% margin` },
           { label: 'ค่าเฉลี่ย/ออเดอร์', value: `฿${fmt(avgOrder)}`, icon: ShoppingBag, color: 'bg-blue-50 text-blue-600', sub: `ส่วนลด ฿${fmt(totalDiscount)}` },
           { label: 'ออเดอร์ทั้งหมด', value: orders.toLocaleString(), icon: Users, color: 'bg-purple-50 text-purple-600', sub: 'ออเดอร์ที่สำเร็จ' },
         ].map(c => (
-          <div key={c.label} className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100">
+          <div key={c.label} className="bg-white rounded-2xl p-3 sm:p-4 shadow-sm border border-gray-100">
             <div className="flex items-start justify-between">
               <div>
-                <p className="text-gray-500 text-xs mb-1">{c.label}</p>
-                <p className="text-xl font-bold text-gray-800">{c.value}</p>
-                <p className="text-xs text-gray-400 mt-1">{c.sub}</p>
+                <p className="text-gray-500 text-[10px] sm:text-xs mb-1">{c.label}</p>
+                <p className="text-lg sm:text-xl font-bold text-gray-800">{c.value}</p>
+                <p className="text-[10px] sm:text-xs text-gray-400 mt-1">{c.sub}</p>
               </div>
               <div className={`p-2 rounded-xl ${c.color}`}><c.icon size={18} /></div>
             </div>
@@ -146,9 +146,9 @@ export default function ReportsClient({ allSales, products }: Props) {
 
       {tab === 'summary' && (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-          <div className="lg:col-span-2 bg-white rounded-2xl p-5 shadow-sm border border-gray-100">
+          <div className="lg:col-span-2 bg-white rounded-2xl p-3 sm:p-5 shadow-sm border border-gray-100">
             <h2 className="font-semibold text-gray-800 mb-4">ยอดขายตามช่วงเวลา</h2>
-            <ResponsiveContainer width="100%" height={220}>
+            <ResponsiveContainer width="100%" height={180}>
               <BarChart data={dailyData}>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f3f4f6" />
                 <XAxis dataKey="date" tick={{ fontSize: 11 }} axisLine={false} tickLine={false} />
@@ -158,7 +158,7 @@ export default function ReportsClient({ allSales, products }: Props) {
               </BarChart>
             </ResponsiveContainer>
           </div>
-          <div className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100">
+          <div className="bg-white rounded-2xl p-3 sm:p-5 shadow-sm border border-gray-100">
             <h2 className="font-semibold text-gray-800 mb-4">สัดส่วนการชำระ</h2>
             {paymentData.length === 0 ? (
               <div className="flex items-center justify-center h-40 text-gray-400 text-sm">ไม่มีข้อมูล</div>
@@ -178,6 +178,7 @@ export default function ReportsClient({ allSales, products }: Props) {
 
       {tab === 'sales' && (
         <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+          <div className="overflow-x-auto -mx-3 sm:mx-0">
           <table className="w-full text-sm">
             <thead>
               <tr className="bg-gray-50 text-gray-500 text-xs uppercase">
@@ -212,11 +213,13 @@ export default function ReportsClient({ allSales, products }: Props) {
               ))}
             </tbody>
           </table>
+          </div>
         </div>
       )}
 
       {tab === 'products' && (
         <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+          <div className="overflow-x-auto -mx-3 sm:mx-0">
           <table className="w-full text-sm">
             <thead>
               <tr className="bg-gray-50 text-gray-500 text-xs uppercase">
@@ -243,6 +246,7 @@ export default function ReportsClient({ allSales, products }: Props) {
               ))}
             </tbody>
           </table>
+          </div>
         </div>
       )}
     </div>

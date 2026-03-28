@@ -203,7 +203,7 @@ export default function KitchenDisplay({ station, printer, initialOrders }: Prop
       </div>
 
       {/* Orders Grid */}
-      <div className="flex-1 p-4 overflow-y-auto">
+      <div className="flex-1 p-3 sm:p-4 lg:p-6 overflow-y-auto">
         {activeOrders.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-64 text-gray-600">
             <ChefHat size={48} className="mb-3 opacity-30" />
@@ -213,7 +213,7 @@ export default function KitchenDisplay({ station, printer, initialOrders }: Prop
             </p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4">
             {activeOrders.map(order => {
               const elapsed = elapsedMin(order.createdAt)
               const isNew = newOrderIds.has(order.id)
@@ -221,16 +221,16 @@ export default function KitchenDisplay({ station, printer, initialOrders }: Prop
                 <div
                   key={order.id}
                   className={clsx(
-                    'rounded-2xl border-2 p-4 flex flex-col gap-3 transition-all duration-300',
+                    'rounded-2xl border-2 p-3 sm:p-4 flex flex-col gap-3 transition-all duration-300',
                     STATUS_CARD[order.status],
                     isNew && 'ring-4 ring-red-400 animate-pulse'
                   )}
                 >
                   {/* Order Header */}
-                  <div className="flex items-start justify-between">
-                    <div>
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="min-w-0">
                       {order.tableNo && (
-                        <div className="text-2xl font-black text-gray-800 leading-none">
+                        <div className="text-xl sm:text-2xl font-black text-gray-800 leading-none">
                           โต๊ะ {order.tableNo}
                         </div>
                       )}
@@ -251,11 +251,11 @@ export default function KitchenDisplay({ station, printer, initialOrders }: Prop
                   <div className="space-y-1.5">
                     {order.items.map((item, idx) => (
                       <div key={idx} className="flex items-start gap-2">
-                        <span className="text-lg font-black text-gray-800 min-w-[28px] text-right leading-tight">
+                        <span className="text-sm sm:text-lg font-black text-gray-800 min-w-[24px] sm:min-w-[28px] text-right leading-tight">
                           {item.qty}×
                         </span>
-                        <div>
-                          <span className="text-sm font-semibold text-gray-800">{item.productName}</span>
+                        <div className="min-w-0">
+                          <span className="text-xs sm:text-sm font-semibold text-gray-800 block">{item.productName}</span>
                           {item.note && (
                             <p className="text-xs text-orange-600 font-medium mt-0.5">⚠ {item.note}</p>
                           )}
@@ -265,11 +265,11 @@ export default function KitchenDisplay({ station, printer, initialOrders }: Prop
                   </div>
 
                   {/* Action Buttons */}
-                  <div className="flex gap-2 mt-auto pt-2 border-t border-gray-200">
+                  <div className="flex gap-1.5 sm:gap-2 mt-auto pt-2 border-t border-gray-200">
                     {order.status === 'pending' && (
                       <button
                         onClick={() => updateStatus(order.id, 'preparing')}
-                        className="flex-1 py-2 bg-yellow-400 hover:bg-yellow-500 text-yellow-900 rounded-xl text-sm font-bold transition-colors"
+                        className="flex-1 py-2 sm:py-2.5 bg-yellow-400 hover:bg-yellow-500 text-yellow-900 rounded-xl text-xs sm:text-sm font-bold transition-colors"
                       >
                         เริ่มทำ
                       </button>
@@ -277,7 +277,7 @@ export default function KitchenDisplay({ station, printer, initialOrders }: Prop
                     {order.status === 'preparing' && (
                       <button
                         onClick={() => updateStatus(order.id, 'ready')}
-                        className="flex-1 py-2 bg-green-500 hover:bg-green-600 text-white rounded-xl text-sm font-bold transition-colors"
+                        className="flex-1 py-2 sm:py-2.5 bg-green-500 hover:bg-green-600 text-white rounded-xl text-xs sm:text-sm font-bold transition-colors"
                       >
                         พร้อมเสิร์ฟ ✓
                       </button>
@@ -285,17 +285,17 @@ export default function KitchenDisplay({ station, printer, initialOrders }: Prop
                     {order.status === 'ready' && (
                       <button
                         onClick={() => updateStatus(order.id, 'done')}
-                        className="flex-1 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-xl text-sm font-bold transition-colors flex items-center justify-center gap-1"
+                        className="flex-1 py-2 sm:py-2.5 bg-gray-600 hover:bg-gray-700 text-white rounded-xl text-xs sm:text-sm font-bold transition-colors flex items-center justify-center gap-1"
                       >
-                        <CheckCircle size={14} /> เสร็จ
+                        <CheckCircle size={13} className="sm:w-4 sm:h-4" /> เสร็จ
                       </button>
                     )}
                     <button
                       onClick={() => printKOT(order, station.color)}
-                      className="w-9 h-9 flex items-center justify-center bg-gray-700 hover:bg-gray-600 text-gray-300 rounded-xl transition-colors"
+                      className="w-8 h-8 sm:w-9 sm:h-9 flex items-center justify-center bg-gray-700 hover:bg-gray-600 text-gray-300 rounded-xl transition-colors"
                       title="พิมพ์ KOT"
                     >
-                      <Printer size={15} />
+                      <Printer size={14} className="sm:w-4 sm:h-4" />
                     </button>
                   </div>
                 </div>

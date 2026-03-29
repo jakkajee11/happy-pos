@@ -381,13 +381,17 @@ export default function POSClient({ initialProducts, categories, members, promot
                       inCart && 'border-orange-400 bg-orange-50'
                     )}
                   >
-                    {/* Category color dot */}
-                    <div
-                      className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl flex items-center justify-center text-lg sm:text-xl mb-1 sm:mb-2"
-                      style={{ backgroundColor: categories.find(c => c.id === product.categoryId)?.color + '20' }}
-                    >
-                      {categories.find(c => c.id === product.categoryId)?.icon || '📦'}
-                    </div>
+                    {/* Product image or category icon */}
+                    {product.image ? (
+                      <img src={product.image} alt={product.name} className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl object-cover mb-1 sm:mb-2" loading="lazy" />
+                    ) : (
+                      <div
+                        className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl flex items-center justify-center text-lg sm:text-xl mb-1 sm:mb-2"
+                        style={{ backgroundColor: categories.find(c => c.id === product.categoryId)?.color + '20' }}
+                      >
+                        {categories.find(c => c.id === product.categoryId)?.icon || '📦'}
+                      </div>
+                    )}
                     <p className="text-xs sm:text-sm font-medium text-gray-800 leading-tight line-clamp-2">{product.name}</p>
                     <p className="text-sm sm:text-base font-bold text-orange-600 mt-0.5 sm:mt-1">฿{fmt(product.price)}</p>
                     {product.trackStock && (

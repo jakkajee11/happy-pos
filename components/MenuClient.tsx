@@ -205,8 +205,8 @@ export default function MenuClient({ products, categories, shopName, tableNo }: 
           </div>
         </div>
 
-        {/* Summary + Submit */}
-        <div className="bg-white border-t border-gray-200 p-4 space-y-3">
+        {/* Summary + Submit — sticky bottom */}
+        <div className="sticky bottom-0 bg-white border-t border-gray-200 p-4 space-y-3 shadow-[0_-4px_20px_rgba(0,0,0,0.08)]">
           <div className="flex justify-between items-center">
             <span className="text-gray-600">รวมทั้งหมด ({totalItems} รายการ)</span>
             <span className="text-2xl font-bold text-orange-600">฿{fmt(subtotal)}</span>
@@ -214,9 +214,9 @@ export default function MenuClient({ products, categories, shopName, tableNo }: 
           <button
             onClick={submitOrder}
             disabled={submitting || cart.length === 0}
-            className="w-full py-4 bg-orange-500 hover:bg-orange-600 disabled:bg-gray-200 disabled:text-gray-400 text-white rounded-2xl font-bold text-lg transition-colors active:scale-95"
+            className="w-full py-4 bg-green-500 hover:bg-green-600 disabled:bg-gray-200 disabled:text-gray-400 text-white rounded-2xl font-bold text-lg transition-colors active:scale-95 shadow-lg shadow-green-200/50"
           >
-            {submitting ? '⏳ กำลังส่ง...' : '✅ ยืนยันสั่งอาหาร'}
+            {submitting ? '⏳ กำลังส่งออเดอร์...' : '✅ ยืนยันสั่งอาหาร'}
           </button>
         </div>
       </div>
@@ -239,13 +239,10 @@ export default function MenuClient({ products, categories, shopName, tableNo }: 
           {totalItems > 0 && (
             <button
               onClick={() => setScreen('cart')}
-              className="relative flex items-center gap-2 bg-white text-orange-600 px-4 py-2 rounded-2xl font-semibold text-sm active:scale-95"
+              className="relative flex items-center gap-2 bg-white text-orange-600 px-4 py-2 rounded-2xl font-semibold text-sm active:scale-95 shadow-sm"
             >
               <ShoppingBag size={18} />
-              <span>฿{fmt(subtotal)}</span>
-              <span className="absolute -top-2 -right-2 w-5 h-5 bg-red-500 text-white rounded-full text-xs flex items-center justify-center font-bold">
-                {totalItems}
-              </span>
+              <span>{totalItems} รายการ</span>
             </button>
           )}
         </div>
@@ -299,13 +296,17 @@ export default function MenuClient({ products, categories, shopName, tableNo }: 
                   )}
                 >
                   <div className="flex items-center gap-3">
-                    {/* Icon */}
-                    <div
-                      className="w-14 h-14 rounded-2xl flex items-center justify-center text-3xl shrink-0"
-                      style={{ backgroundColor: (cat?.color || '#888') + '20' }}
-                    >
-                      {cat?.icon || '🍽️'}
-                    </div>
+                    {/* Product image or icon */}
+                    {product.image ? (
+                      <img src={product.image} alt={product.name} className="w-14 h-14 rounded-2xl object-cover shrink-0" loading="lazy" />
+                    ) : (
+                      <div
+                        className="w-14 h-14 rounded-2xl flex items-center justify-center text-3xl shrink-0"
+                        style={{ backgroundColor: (cat?.color || '#888') + '20' }}
+                      >
+                        {cat?.icon || '🍽️'}
+                      </div>
+                    )}
 
                     {/* Info */}
                     <div className="flex-1 min-w-0">
@@ -352,16 +353,19 @@ export default function MenuClient({ products, categories, shopName, tableNo }: 
         )}
       </div>
 
-      {/* Sticky cart button */}
+      {/* Sticky order button */}
       {totalItems > 0 && (
-        <div className="fixed bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-gray-50 to-transparent pointer-events-none">
+        <div className="fixed bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-gray-50 via-gray-50/80 to-transparent pointer-events-none">
           <button
             onClick={() => setScreen('cart')}
-            className="w-full py-4 bg-orange-500 text-white rounded-2xl font-bold text-lg shadow-lg shadow-orange-200 hover:bg-orange-600 active:scale-95 transition-all flex items-center justify-between px-5 pointer-events-auto"
+            className="w-full py-4 bg-orange-500 text-white rounded-2xl font-bold text-lg shadow-lg shadow-orange-300/50 hover:bg-orange-600 active:scale-95 transition-all flex items-center justify-between px-5 pointer-events-auto"
           >
-            <span className="bg-orange-600 px-2.5 py-0.5 rounded-xl text-sm">{totalItems}</span>
-            <span>ดูตะกร้า</span>
-            <span>฿{fmt(subtotal)}</span>
+            <span className="bg-white/20 px-3 py-1 rounded-xl text-sm font-bold">{totalItems} รายการ</span>
+            <span className="flex items-center gap-2">
+              <ShoppingBag size={20} />
+              สั่งอาหาร
+            </span>
+            <span className="font-bold">฿{fmt(subtotal)}</span>
           </button>
         </div>
       )}

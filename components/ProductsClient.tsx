@@ -1,6 +1,6 @@
 'use client'
-import { useState } from 'react'
-import { Plus, Pencil, Trash2, Search, Package, X, Check, ChevronDown } from 'lucide-react'
+import { useState, useRef, useCallback } from 'react'
+import { Plus, Pencil, Trash2, Search, Package, X, Check, ChevronDown, Camera, ImageIcon } from 'lucide-react'
 import clsx from 'clsx'
 import { Product, Category, Station } from '@/lib/db'
 
@@ -14,7 +14,35 @@ const ICONS = ['📦','☕','🍜','🍰','🥤','🧋','🍕','🍔','🍣','�
 const COLORS = ['#6B7280','#EF4444','#F59E0B','#10B981','#3B82F6','#8B5CF6','#EC4899','#06B6D4']
 
 const emptyProduct = {
-  name: '', price: '', cost: '', categoryId: '', stationId: '', stock: '', trackStock: false, barcode: '', isActive: true
+  name: '', price: '', cost: '', categoryId: '', stationId: '', stock: '', trackStock: false, barcode: '', isActive: true, image: ''
+}
+
+// Resize image on client side for performance
+function resizeImage(file: File, maxSize: number = 480, quality: number = 0.82): Promise<Blob> {
+  return new Promise((resolve, reject) => {
+    const img = new Image()
+    const url = URL.createObjectURL(file)
+    img.onload = () => {
+      URL.revokeObjectURL(url)
+      let w = img.width, h = img.height
+      if (w > maxSize || h > maxSize) {
+        if (w > h) { h = Math.round(h * maxSize / w); w = maxSize }
+        else { w = Math.round(w * maxSize / h); h = maxSize }
+      }
+      const canvas = document.createElement('canvas')
+      canvas.width = w
+      canvas.height = h
+      const ctx = canvas.getContext('2d')!
+      ctx.drawImage(img, 0, 0, w, h)
+      canvas.toBlob(
+        blob => blob ? resolve(blob) : reject(new Error('Canvas toBlob failed')),
+        'image/jpeg',
+        quality
+      )
+    }
+    img.onerror = () => { URL.revokeObjectURL(url); reject(new Error('Image load failed')) }
+    img.src = url
+  })
 }
 
 export default function ProductsClient({ initialProducts, initialCategories, initialStations }: Props) {
@@ -30,6 +58,48 @@ export default function ProductsClient({ initialProducts, initialCategories, ini
   const [catForm, setCatForm] = useState({ name: '', icon: '📦', color: '#6B7280' })
   const [editingCat, setEditingCat] = useState<Category | null>(null)
   const [saving, setSaving] = useState(false)
+  const [imageFile, setImageFile] = useState<File | null>(null)
+  const [imagePreview, setImagePreview] = useState<string>('')
+  const [uploadingImage, setUploadingImage] = useState(false)
+  const fileInputRef = useRef<HTMLInputElement>(null)
+
+  const handleImageSelect = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    setImageFile(file)
+    // Show preview immediately
+    const url = URL.createObjectURL(file)
+    setImagePreview(url)
+  }, [])
+
+  const uploadImage = async (productId: string): Promise<string> => {
+    if (!imageFile) return form.image || ''
+    setUploadingImage(true)
+    try {
+      const resized = await resizeImage(imageFile, 480, 0.82)
+      const formData = new FormData()
+      formData.append('image', resized, `${productId}.jpg`)
+      formData.append('productId', productId)
+      const res = await fetch('/api/upload', { method: 'POST', body: formData })
+      const data = await res.json()
+      return data.image || ''
+    } catch (err) {
+      console.error('Upload failed:', err)
+      return form.image || ''
+    } finally {
+      setUploadingImage(false)
+    }
+  }
+
+  const removeImage = async (productId?: string) => {
+    if (productId) {
+      await fetch(`/api/upload?id=${productId}`, { method: 'DELETE' })
+    }
+    setImageFile(null)
+    setImagePreview('')
+    setForm((f: any) => ({ ...f, image: '' }))
+    if (fileInputRef.current) fileInputRef.current.value = ''
+  }
 
   const filtered = products.filter(p => {
     const matchCat = filterCat === 'all' || p.categoryId === filterCat
@@ -37,24 +107,52 @@ export default function ProductsClient({ initialProducts, initialCategories, ini
     return matchCat && matchSearch
   })
 
-  const openNew = () => { setEditing(null); setForm(emptyProduct); setShowModal(true) }
+  const openNew = () => { setEditing(null); setForm(emptyProduct); setImageFile(null); setImagePreview(''); setShowModal(true) }
   const openEdit = (p: Product) => {
     setEditing(p)
-    setForm({ name: p.name, price: p.price, cost: p.cost, categoryId: p.categoryId, stationId: p.stationId || '', stock: p.stock, trackStock: p.trackStock, barcode: p.barcode || '', isActive: p.isActive })
+    setForm({ name: p.name, price: p.price, cost: p.cost, categoryId: p.categoryId, stationId: p.stationId || '', stock: p.stock, trackStock: p.trackStock, barcode: p.barcode || '', isActive: p.isActive, image: p.image || '' })
+    setImageFile(null)
+    setImagePreview(p.image || '')
     setShowModal(true)
   }
 
   const save = async () => {
     setSaving(true)
-    const payload = { ...form, price: Number(form.price), cost: Number(form.cost), stock: Number(form.stock), stationId: form.stationId || undefined }
-    const method = editing ? 'PUT' : 'POST'
-    if (editing) payload.id = editing.id
-    const res = await fetch('/api/products', { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) })
-    const saved = await res.json()
-    if (editing) setProducts(prev => prev.map(p => p.id === saved.id ? saved : p))
-    else setProducts(prev => [...prev, saved])
-    setShowModal(false)
-    setSaving(false)
+    try {
+      const payload = { ...form, price: Number(form.price), cost: Number(form.cost), stock: Number(form.stock), stationId: form.stationId || undefined }
+      const method = editing ? 'PUT' : 'POST'
+      if (editing) payload.id = editing.id
+
+      // If image was removed (preview empty but previously had image)
+      if (!imagePreview && editing?.image) {
+        payload.image = ''
+      }
+
+      const res = await fetch('/api/products', { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) })
+      const saved = await res.json()
+
+      // Upload image after product is saved (need the product id)
+      if (imageFile) {
+        const imageUrl = await uploadImage(saved.id)
+        if (imageUrl) {
+          saved.image = imageUrl
+          // Update image field on the product
+          await fetch('/api/products', {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ id: saved.id, image: imageUrl })
+          })
+        }
+      }
+
+      if (editing) setProducts(prev => prev.map(p => p.id === saved.id ? saved : p))
+      else setProducts(prev => [...prev, saved])
+      setShowModal(false)
+      setImageFile(null)
+      setImagePreview('')
+    } finally {
+      setSaving(false)
+    }
   }
 
   const remove = async (id: string) => {
@@ -169,9 +267,13 @@ export default function ProductsClient({ initialProducts, initialCategories, ini
                 <tr key={p.id} className="hover:bg-gray-50 transition-colors">
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-3">
-                      <div className="w-9 h-9 rounded-xl flex items-center justify-center text-lg" style={{ backgroundColor: (cat?.color || '#888') + '20' }}>
-                        {cat?.icon || '📦'}
-                      </div>
+                      {p.image ? (
+                        <img src={p.image} alt={p.name} className="w-9 h-9 rounded-xl object-cover" loading="lazy" />
+                      ) : (
+                        <div className="w-9 h-9 rounded-xl flex items-center justify-center text-lg" style={{ backgroundColor: (cat?.color || '#888') + '20' }}>
+                          {cat?.icon || '📦'}
+                        </div>
+                      )}
                       <div>
                         <p className="font-medium text-gray-800">{p.name}</p>
                         {p.barcode && <p className="text-xs text-gray-400">{p.barcode}</p>}
@@ -240,6 +342,52 @@ export default function ProductsClient({ initialProducts, initialCategories, ini
                 <label className="block text-sm font-medium text-gray-700 mb-1">ชื่อสินค้า *</label>
                 <input value={form.name} onChange={e => setForm({ ...form, name: e.target.value })}
                   className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-300" placeholder="ชื่อสินค้า" />
+              </div>
+              {/* Image Upload */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">รูปภาพสินค้า</label>
+                <div className="flex items-start gap-3">
+                  {/* Preview */}
+                  <div
+                    onClick={() => fileInputRef.current?.click()}
+                    className="w-20 h-20 rounded-xl border-2 border-dashed border-gray-300 hover:border-orange-400 flex items-center justify-center cursor-pointer overflow-hidden transition-colors bg-gray-50 shrink-0"
+                  >
+                    {imagePreview ? (
+                      <img src={imagePreview} alt="preview" className="w-full h-full object-cover" />
+                    ) : (
+                      <div className="text-center">
+                        <Camera size={20} className="mx-auto text-gray-400" />
+                        <span className="text-xs text-gray-400 mt-0.5 block">เพิ่มรูป</span>
+                      </div>
+                    )}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <input
+                      ref={fileInputRef}
+                      type="file"
+                      accept="image/jpeg,image/png,image/webp"
+                      onChange={handleImageSelect}
+                      className="hidden"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => fileInputRef.current?.click()}
+                      className="text-sm px-3 py-1.5 border border-gray-200 rounded-lg hover:bg-gray-50 text-gray-600 transition-colors"
+                    >
+                      {imagePreview ? 'เปลี่ยนรูป' : 'เลือกรูป'}
+                    </button>
+                    {imagePreview && (
+                      <button
+                        type="button"
+                        onClick={() => removeImage(editing?.id)}
+                        className="text-sm px-3 py-1.5 ml-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                      >
+                        ลบรูป
+                      </button>
+                    )}
+                    <p className="text-xs text-gray-400 mt-1.5">JPG, PNG, WebP — ย่อขนาดอัตโนมัติ</p>
+                  </div>
+                </div>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>

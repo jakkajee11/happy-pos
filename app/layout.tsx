@@ -3,6 +3,7 @@ import './globals.css'
 import Sidebar from '@/components/Sidebar'
 import { db } from '@/lib/db'
 import { getThemePreset, generateThemeCSS } from '@/lib/themes'
+import { headers } from 'next/headers'
 
 export const dynamic = 'force-dynamic'
 
@@ -11,10 +12,27 @@ export const metadata: Metadata = {
   description: 'ระบบ POS สำหรับธุรกิจขนาดเล็ก-กลาง',
 }
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
   const settings = db.getSettings()
   const theme = getThemePreset(settings.themeId ?? 'orange-classic', settings.customPrimaryColor)
   const themeCSS = generateThemeCSS(theme, settings.customPrimaryColor)
+
+  // Detect customer-facing routes via header set by middleware
+  const headersList = await headers()
+  const isCustomer = headersList.get('x-customer-route') === '1'
+
+  if (isCustomer) {
+    return (
+      <html lang="th">
+        <head>
+          <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+        </head>
+        <body className="bg-gray-50">
+          {children}
+        </body>
+      </html>
+    )
+  }
 
   return (
     <html lang="th">

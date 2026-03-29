@@ -28,6 +28,9 @@ export default function Sidebar() {
   const [collapsed, setCollapsed] = useState(false)
   const [mobileOpen, setMobileOpen] = useState(false)
 
+  // Hide sidebar completely on customer-facing pages (/m and /m?table=X)
+  if (pathname === '/m' || pathname.startsWith('/m/') || pathname.startsWith('/m?')) return null
+
   // Close mobile menu on route change
   useEffect(() => {
     setMobileOpen(false)

@@ -747,7 +747,7 @@ function QRMenuTab({ settings }: { settings: Settings }) {
   }, [])
 
   const menuUrl = (table: string) =>
-    `${origin}/menu?table=${encodeURIComponent(table)}`
+    `${origin}/m?table=${encodeURIComponent(table)}`
 
   const printTableQR = (table: string) => {
     const url = menuUrl(table)
@@ -791,7 +791,7 @@ function QRMenuTab({ settings }: { settings: Settings }) {
         {/* URL preview */}
         <div className="bg-blue-50 rounded-xl p-3 mb-5">
           <p className="text-xs text-blue-600 font-medium mb-1">URL เมนูของคุณ</p>
-          <p className="font-mono text-sm text-blue-800 break-all">{origin}/menu?table=<span className="text-orange-600">[หมายเลขโต๊ะ]</span></p>
+          <p className="font-mono text-sm text-blue-800 break-all">{origin}/m?table=<span className="text-orange-600">[หมายเลขโต๊ะ]</span></p>
         </div>
 
         {/* Table count */}

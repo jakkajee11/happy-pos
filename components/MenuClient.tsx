@@ -87,6 +87,7 @@ export default function MenuClient({ products, categories, shopName, tableNo }: 
           subtotal,
           total: subtotal,
           discount: 0,
+          source: 'qr-menu',
         }),
       })
       const data = await res.json()

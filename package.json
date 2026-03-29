@@ -8,7 +8,8 @@
     "start": "next start -p 21300",
     "lint": "next lint",
     "init-db": "node scripts/init-db.js",
-    "migrate-db": "node scripts/migrate-json-to-sqlite.js"
+    "migrate-db": "node scripts/migrate-json-to-sqlite.js",
+    "prepare": "node -e \"const fs=require('fs'),p='.git/hooks/pre-commit',s='.husky/pre-commit';if(fs.existsSync('.git/hooks')&&fs.existsSync(s)){fs.copyFileSync(s,p);fs.chmodSync(p,0o755);console.log('✅ pre-commit hook installed')}\""
   },
   "dependencies": {
     "better-sqlite3": "^11.1.2",

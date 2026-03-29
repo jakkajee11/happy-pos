@@ -1,0 +1,13 @@
+#!/bin/sh
+
+echo "🔨 Running build check before commit..."
+npm run build 2>&1
+
+if [ $? -ne 0 ]; then
+  echo ""
+  echo "❌ Build failed! กรุณาแก้ไข error ก่อน commit"
+  echo ""
+  exit 1
+fi
+
+echo "✅ Build passed!"

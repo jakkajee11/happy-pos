@@ -84,6 +84,7 @@ export default function POSClient({ initialProducts, categories, members, promot
   const [splitPaidFlags, setSplitPaidFlags] = useState<boolean[]>([]) // paid status (custom & items)
   const [splitQRIndex, setSplitQRIndex] = useState(0)           // which person's QR to show
   const [itemAssignments, setItemAssignments] = useState<Record<string, number | null>>({}) // items mode: productId → person index
+  const [showMobileCart, setShowMobileCart] = useState(false)
   const searchRef = useRef<HTMLInputElement>(null)
 
   const filteredProducts = products.filter(p => {
@@ -297,8 +298,6 @@ export default function POSClient({ initialProducts, categories, members, promot
       />
     )
   }
-
-  const [showMobileCart, setShowMobileCart] = useState(false)
 
   return (
     <div className="flex flex-col md:flex-row h-screen bg-gray-50">

@@ -1,6 +1,6 @@
 'use client'
-import { useState, useCallback } from 'react'
-import { Plus, Minus, ShoppingBag, X, ChevronLeft, CheckCircle } from 'lucide-react'
+import { useState, useCallback, useEffect } from 'react'
+import { Plus, Minus, ShoppingBag, X, ChevronLeft, CheckCircle, Receipt, Bell, ClipboardList } from 'lucide-react'
 import clsx from 'clsx'
 import { Product, Category } from '@/lib/db'
 
@@ -14,6 +14,14 @@ interface CartItem {
   note?: string
 }
 
+interface PastOrder {
+  orderNo: string
+  items: CartItem[]
+  subtotal: number
+  total: number
+  createdAt: string
+}
+
 interface Props {
   products: Product[]
   categories: Category[]
@@ -23,7 +31,7 @@ interface Props {
 
 const fmt = (n: number) => n.toLocaleString('th-TH', { minimumFractionDigits: 0, maximumFractionDigits: 2 })
 
-type Screen = 'menu' | 'cart' | 'confirm' | 'done'
+type Screen = 'menu' | 'cart' | 'done' | 'history'
 
 export default function MenuClient({ products, categories, shopName, tableNo }: Props) {
   const [selectedCat, setSelectedCat] = useState('all')
@@ -33,6 +41,13 @@ export default function MenuClient({ products, categories, shopName, tableNo }: 
   const [orderNote, setOrderNote] = useState('')
   const [submitting, setSubmitting] = useState(false)
   const [orderNo, setOrderNo] = useState('')
+
+  // Order history
+  const [pastOrders, setPastOrders] = useState<PastOrder[]>([])
+  const [requestingBill, setRequestingBill] = useState(false)
+  const [billRequested, setBillRequested] = useState(false)
+  const [callingStaff, setCallingStaff] = useState(false)
+  const [staffCalled, setStaffCalled] = useState(false)
 
   const filtered = products.filter(p => {
     if (selectedCat !== 'all' && p.categoryId !== selectedCat) return false
@@ -73,6 +88,9 @@ export default function MenuClient({ products, categories, shopName, tableNo }: 
   const subtotal = cart.reduce((s, i) => s + i.total, 0)
   const totalItems = cart.reduce((s, i) => s + i.qty, 0)
 
+  // Grand total from all past orders
+  const grandTotal = pastOrders.reduce((s, o) => s + o.total, 0)
+
   const submitOrder = async () => {
     if (cart.length === 0) return
     setSubmitting(true)
@@ -92,11 +110,61 @@ export default function MenuClient({ products, categories, shopName, tableNo }: 
       })
       const data = await res.json()
       setOrderNo(data.orderNo)
+
+      // Save to past orders
+      setPastOrders(prev => [...prev, {
+        orderNo: data.orderNo,
+        items: [...cart],
+        subtotal,
+        total: subtotal,
+        createdAt: new Date().toISOString(),
+      }])
+
       setScreen('done')
     } catch {
       alert('เกิดข้อผิดพลาด กรุณาลองใหม่')
     } finally {
       setSubmitting(false)
+    }
+  }
+
+  const requestCheckBill = async () => {
+    setRequestingBill(true)
+    try {
+      await fetch('/api/notifications', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          type: 'check-bill',
+          tableNo: tableInput || undefined,
+        }),
+      })
+      setBillRequested(true)
+      setTimeout(() => setBillRequested(false), 30000) // reset after 30s
+    } catch {
+      alert('เกิดข้อผิดพลาด กรุณาลองใหม่')
+    } finally {
+      setRequestingBill(false)
+    }
+  }
+
+  const callStaff = async () => {
+    setCallingStaff(true)
+    try {
+      await fetch('/api/notifications', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          type: 'call-staff',
+          tableNo: tableInput || undefined,
+        }),
+      })
+      setStaffCalled(true)
+      setTimeout(() => setStaffCalled(false), 30000)
+    } catch {
+      alert('เกิดข้อผิดพลาด กรุณาลองใหม่')
+    } finally {
+      setCallingStaff(false)
     }
   }
 
@@ -122,13 +190,133 @@ export default function MenuClient({ products, categories, shopName, tableNo }: 
             <span className="text-orange-600">฿{fmt(subtotal)}</span>
           </div>
         </div>
-        <p className="text-sm text-gray-400">กรุณารอสักครู่ พนักงานจะนำอาหารมาให้</p>
-        <button
-          onClick={() => { setCart([]); setScreen('menu'); setOrderNote('') }}
-          className="mt-6 px-6 py-3 bg-orange-500 text-white rounded-2xl font-semibold hover:bg-orange-600"
-        >
-          สั่งเพิ่ม
-        </button>
+        <p className="text-sm text-gray-400 mb-6">กรุณารอสักครู่ พนักงานจะนำอาหารมาให้</p>
+
+        <div className="flex gap-3 w-full max-w-sm">
+          <button
+            onClick={() => { setCart([]); setScreen('menu'); setOrderNote('') }}
+            className="flex-1 px-4 py-3 bg-orange-500 text-white rounded-2xl font-semibold hover:bg-orange-600 active:scale-95"
+          >
+            สั่งเพิ่ม
+          </button>
+          <button
+            onClick={() => setScreen('history')}
+            className="flex-1 px-4 py-3 bg-gray-100 text-gray-700 rounded-2xl font-semibold hover:bg-gray-200 active:scale-95"
+          >
+            ดูรายการทั้งหมด
+          </button>
+        </div>
+      </div>
+    )
+  }
+
+  // ─── Order History Screen ──────────────────────────────────────
+  if (screen === 'history') {
+    return (
+      <div className="min-h-screen flex flex-col bg-gray-50">
+        {/* Header */}
+        <div className="bg-white px-4 py-3 border-b border-gray-200 flex items-center gap-3 sticky top-0 z-10">
+          <button onClick={() => setScreen('menu')} className="text-gray-500">
+            <ChevronLeft size={24} />
+          </button>
+          <h2 className="font-bold text-gray-800 text-lg flex-1">รายการที่สั่งทั้งหมด</h2>
+          {tableInput && <span className="text-sm text-gray-500">โต๊ะ {tableInput}</span>}
+        </div>
+
+        <div className="flex-1 overflow-y-auto p-4 pb-48 space-y-4">
+          {pastOrders.length === 0 ? (
+            <div className="text-center py-20 text-gray-400">
+              <ClipboardList size={48} className="mx-auto mb-3 text-gray-300" />
+              <p className="text-lg font-medium">ยังไม่มีรายการสั่ง</p>
+              <p className="text-sm mt-1">เลือกอาหารจากเมนูเพื่อเริ่มสั่ง</p>
+            </div>
+          ) : (
+            <>
+              {pastOrders.map((order, idx) => (
+                <div key={idx} className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+                  <div className="bg-orange-50 px-4 py-2 flex justify-between items-center border-b border-orange-100">
+                    <span className="font-semibold text-orange-700 text-sm">
+                      {order.orderNo}
+                    </span>
+                    <span className="text-xs text-gray-500">
+                      {new Date(order.createdAt).toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' })}
+                    </span>
+                  </div>
+                  <div className="p-4 space-y-1.5">
+                    {order.items.map((item, i) => (
+                      <div key={i} className="flex justify-between text-sm">
+                        <span className="text-gray-700">{item.qty}× {item.productName}</span>
+                        <span className="text-gray-600 font-medium">฿{fmt(item.total)}</span>
+                      </div>
+                    ))}
+                    <div className="border-t border-gray-100 pt-1.5 flex justify-between font-bold text-sm">
+                      <span className="text-gray-600">รวม</span>
+                      <span className="text-orange-600">฿{fmt(order.total)}</span>
+                    </div>
+                  </div>
+                </div>
+              ))}
+
+              {/* Grand Total */}
+              <div className="bg-orange-500 text-white rounded-2xl p-4 shadow-lg">
+                <div className="flex justify-between items-center">
+                  <span className="font-medium">ยอดรวมทั้งหมด</span>
+                  <span className="text-2xl font-bold">฿{fmt(grandTotal)}</span>
+                </div>
+                <p className="text-orange-100 text-sm mt-1">{pastOrders.length} ออเดอร์ • {pastOrders.reduce((s, o) => s + o.items.reduce((a, i) => a + i.qty, 0), 0)} รายการ</p>
+              </div>
+            </>
+          )}
+        </div>
+
+        {/* Bottom actions */}
+        <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-4 space-y-3 shadow-[0_-4px_20px_rgba(0,0,0,0.08)]">
+          {/* Check Bill */}
+          <button
+            onClick={requestCheckBill}
+            disabled={requestingBill || billRequested || pastOrders.length === 0}
+            className={clsx(
+              'w-full py-4 rounded-2xl font-bold text-lg transition-all active:scale-95 flex items-center justify-center gap-2',
+              billRequested
+                ? 'bg-green-100 text-green-700 border-2 border-green-300'
+                : 'bg-blue-500 hover:bg-blue-600 text-white shadow-lg shadow-blue-200/50 disabled:bg-gray-200 disabled:text-gray-400 disabled:shadow-none'
+            )}
+          >
+            {billRequested ? (
+              <><CheckCircle size={20} /> แจ้งเช็คบิลแล้ว — รอพนักงาน</>
+            ) : requestingBill ? (
+              '⏳ กำลังแจ้ง...'
+            ) : (
+              <><Receipt size={20} /> เรียกเช็คบิล</>
+            )}
+          </button>
+
+          {/* Call Staff + Order More */}
+          <div className="flex gap-3">
+            <button
+              onClick={callStaff}
+              disabled={callingStaff || staffCalled}
+              className={clsx(
+                'flex-1 py-3 rounded-2xl font-semibold transition-all active:scale-95 flex items-center justify-center gap-2',
+                staffCalled
+                  ? 'bg-green-100 text-green-700 border-2 border-green-300'
+                  : 'bg-yellow-400 hover:bg-yellow-500 text-yellow-900 disabled:bg-gray-200 disabled:text-gray-400'
+              )}
+            >
+              {staffCalled ? (
+                <><CheckCircle size={18} /> เรียกแล้ว</>
+              ) : (
+                <><Bell size={18} /> เรียกพนักงาน</>
+              )}
+            </button>
+            <button
+              onClick={() => { setCart([]); setScreen('menu'); setOrderNote('') }}
+              className="flex-1 py-3 bg-orange-500 text-white rounded-2xl font-semibold hover:bg-orange-600 active:scale-95"
+            >
+              สั่งเพิ่ม
+            </button>
+          </div>
+        </div>
       </div>
     )
   }
@@ -237,15 +425,28 @@ export default function MenuClient({ products, categories, shopName, tableNo }: 
               : <p className="text-orange-100 text-sm">สั่งออนไลน์</p>
             }
           </div>
-          {totalItems > 0 && (
-            <button
-              onClick={() => setScreen('cart')}
-              className="relative flex items-center gap-2 bg-white text-orange-600 px-4 py-2 rounded-2xl font-semibold text-sm active:scale-95 shadow-sm"
-            >
-              <ShoppingBag size={18} />
-              <span>{totalItems} รายการ</span>
-            </button>
-          )}
+          <div className="flex items-center gap-2">
+            {/* Order history button */}
+            {pastOrders.length > 0 && (
+              <button
+                onClick={() => setScreen('history')}
+                className="relative flex items-center gap-1.5 bg-white/20 text-white px-3 py-2 rounded-2xl text-sm active:scale-95"
+              >
+                <ClipboardList size={16} />
+                <span>฿{fmt(grandTotal)}</span>
+              </button>
+            )}
+            {/* Cart button */}
+            {totalItems > 0 && (
+              <button
+                onClick={() => setScreen('cart')}
+                className="relative flex items-center gap-2 bg-white text-orange-600 px-4 py-2 rounded-2xl font-semibold text-sm active:scale-95 shadow-sm"
+              >
+                <ShoppingBag size={18} />
+                <span>{totalItems} รายการ</span>
+              </button>
+            )}
+          </div>
         </div>
       </div>
 

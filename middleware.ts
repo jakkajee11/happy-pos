@@ -8,10 +8,11 @@ function isCustomerPath(pathname: string): boolean {
 
 // APIs that customers are allowed to call
 const CUSTOMER_API_WHITELIST = [
-  { path: '/api/orders', methods: ['POST'] },           // สร้างออเดอร์
+  { path: '/api/orders', methods: ['POST', 'GET'] },    // สร้าง + ดูออเดอร์ของตัวเอง
   { path: '/api/products', methods: ['GET'] },           // ดูรายการสินค้า (สำหรับเมนู)
   { path: '/api/categories', methods: ['GET'] },         // ดูหมวดหมู่
   { path: '/api/images', methods: ['GET'] },             // ดูรูปสินค้า
+  { path: '/api/notifications', methods: ['POST'] },     // เรียกเช็คบิล / เรียกพนักงาน
 ]
 
 // Static assets and Next.js internals — always allow

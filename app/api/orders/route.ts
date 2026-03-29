@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { db, OpenOrder } from '@/lib/db'
+import { db, OpenOrder, KitchenOrder, KitchenOrderItem } from '@/lib/db'
 import { v4 as uuidv4 } from 'uuid'
 
 function generateOrderNo(): string {
@@ -44,7 +44,54 @@ export async function POST(req: NextRequest) {
 
   orders.push(order)
   db.saveOpenOrders(orders)
-  return NextResponse.json(order, { status: 201 })
+
+  // ---- Route items to Kitchen Stations (same logic as sales) ----
+  const stations = db.getStations().filter(s => s.isActive)
+  let newKitchenOrders: KitchenOrder[] = []
+
+  if (stations.length > 0) {
+    const products = db.getProducts()
+    const kitchenOrders = db.getKitchenOrders()
+    const stationItemMap = new Map<string, KitchenOrderItem[]>()
+
+    for (const item of body.items) {
+      const prod = products.find((p: { id: string }) => p.id === item.productId)
+      if (!prod || !prod.stationId) continue
+
+      const existing = stationItemMap.get(prod.stationId) || []
+      existing.push({
+        productId: item.productId,
+        productName: item.productName,
+        qty: item.qty,
+        note: item.note,
+      })
+      stationItemMap.set(prod.stationId, existing)
+    }
+
+    for (const [stationId, items] of Array.from(stationItemMap.entries())) {
+      const station = stations.find(s => s.id === stationId)
+      if (!station) continue
+
+      const ko: KitchenOrder = {
+        id: uuidv4(),
+        saleId: order.id,          // ใช้ order id แทน sale id
+        receiptNo: order.orderNo,  // ใช้ order no แทน receipt no
+        stationId,
+        stationName: station.name,
+        tableNo: body.tableNo,
+        items,
+        status: 'pending',
+        createdAt: now,
+        updatedAt: now,
+      }
+      kitchenOrders.push(ko)
+      newKitchenOrders.push(ko)
+    }
+
+    db.saveKitchenOrders(kitchenOrders)
+  }
+
+  return NextResponse.json({ ...order, kitchenOrders: newKitchenOrders }, { status: 201 })
 }
 
 // PUT — update existing open order (add items, edit)

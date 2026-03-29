@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation'
 import { Trash2, RefreshCw, UtensilsCrossed, Clock } from 'lucide-react'
 import clsx from 'clsx'
 import { OpenOrder } from '@/lib/db'
+import NotificationBell from './NotificationBell'
 
 interface Props {
   initialOrders: OpenOrder[]
@@ -70,6 +71,7 @@ export default function OrdersClient({ initialOrders }: Props) {
           <p className="text-gray-500 text-xs sm:text-sm">{orders.length} โต๊ะ / ออเดอร์ที่รอชำระ</p>
         </div>
         <div className="flex gap-2 w-full sm:w-auto">
+          <NotificationBell />
           <button
             onClick={refresh}
             disabled={loading}

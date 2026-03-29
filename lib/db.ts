@@ -153,6 +153,17 @@ function initSchema(db: Database.Database) {
     CREATE INDEX IF NOT EXISTS idx_kitchen_orders_status    ON kitchen_orders(status);
     CREATE INDEX IF NOT EXISTS idx_kitchen_orders_stationId ON kitchen_orders(stationId);
 
+    CREATE TABLE IF NOT EXISTS notifications (
+      id         TEXT PRIMARY KEY,
+      type       TEXT NOT NULL,
+      tableNo    TEXT,
+      orderId    TEXT,
+      message    TEXT NOT NULL,
+      status     TEXT NOT NULL DEFAULT 'unread',
+      createdAt  TEXT NOT NULL
+    );
+    CREATE INDEX IF NOT EXISTS idx_notifications_status ON notifications(status);
+
     CREATE TABLE IF NOT EXISTS open_orders (
       id           TEXT PRIMARY KEY,
       orderNo      TEXT NOT NULL,
@@ -297,6 +308,16 @@ export interface SaleItem {
   qty: number
   total: number
   note?: string
+}
+
+export interface Notification {
+  id: string
+  type: 'check-bill' | 'call-staff' | 'new-order'
+  tableNo?: string
+  orderId?: string
+  message: string
+  status: 'unread' | 'read'
+  createdAt: string
 }
 
 export interface OpenOrder {
@@ -734,6 +755,28 @@ export const db = {
   // ── Open Orders ──────────────────────────────────────────────────────────────
   getOpenOrders: (): OpenOrder[] =>
     (getDb().prepare('SELECT * FROM open_orders ORDER BY createdAt ASC').all() as never[]).map(mapOpenOrder),
+
+  // ── Notifications ────────────────────────────────────────────────────────────
+  getNotifications: (status?: string): Notification[] => {
+    const d = getDb()
+    if (status) {
+      return d.prepare('SELECT * FROM notifications WHERE status = ? ORDER BY createdAt DESC').all(status) as Notification[]
+    }
+    return d.prepare('SELECT * FROM notifications ORDER BY createdAt DESC LIMIT 50').all() as Notification[]
+  },
+
+  addNotification: (n: Notification) => {
+    const d = getDb()
+    d.prepare(`INSERT INTO notifications (id, type, tableNo, orderId, message, status, createdAt) VALUES (@id, @type, @tableNo, @orderId, @message, @status, @createdAt)`).run(n)
+  },
+
+  markNotificationRead: (id: string) => {
+    getDb().prepare('UPDATE notifications SET status = ? WHERE id = ?').run('read', id)
+  },
+
+  markAllNotificationsRead: () => {
+    getDb().prepare("UPDATE notifications SET status = 'read' WHERE status = 'unread'").run()
+  },
 
   saveOpenOrders: (data: OpenOrder[]) => {
     const d = getDb()

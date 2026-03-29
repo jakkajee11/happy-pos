@@ -8,6 +8,7 @@ import {
 } from 'lucide-react'
 import { useState, useEffect } from 'react'
 import clsx from 'clsx'
+import NotificationBell from './NotificationBell'
 
 const navItems = [
   { href: '/pos',       icon: ShoppingCart,   label: 'ขาย (POS)',      color: 'text-orange-500' },
@@ -62,7 +63,7 @@ export default function Sidebar() {
           </div>
           <span className="font-bold text-gray-800 text-sm">Happy POS</span>
         </div>
-        <div className="w-8" /> {/* Spacer for centering */}
+        <NotificationBell />
       </div>
 
       {/* Mobile overlay */}
@@ -184,6 +185,11 @@ export default function Sidebar() {
         >
           {collapsed ? <ChevronRight size={12} /> : <ChevronLeft size={12} />}
         </button>
+
+        {/* Notifications */}
+        <div className={clsx('px-3 py-2 border-t border-gray-100', collapsed && 'flex justify-center')}>
+          <NotificationBell />
+        </div>
 
         {/* Clock */}
         <div className={clsx(

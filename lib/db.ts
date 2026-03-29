@@ -708,6 +708,25 @@ export const db = {
   getKitchenOrders: (): KitchenOrder[] =>
     (getDb().prepare('SELECT * FROM kitchen_orders ORDER BY createdAt ASC').all() as never[]).map(mapKitchenOrder),
 
+  // Insert new kitchen orders (append only — safe for concurrent use)
+  addKitchenOrders: (orders: KitchenOrder[]) => {
+    if (orders.length === 0) return
+    const d = getDb()
+    const insert = d.prepare(`
+      INSERT OR IGNORE INTO kitchen_orders (id, saleId, receiptNo, stationId, stationName, tableNo, items, status, note, createdAt, updatedAt)
+      VALUES (@id, @saleId, @receiptNo, @stationId, @stationName, @tableNo, @items, @status, @note, @createdAt, @updatedAt)
+    `)
+    d.transaction(() => {
+      orders.forEach(r => insert.run({
+        id: r.id, saleId: r.saleId, receiptNo: r.receiptNo,
+        stationId: r.stationId, stationName: r.stationName,
+        tableNo: r.tableNo ?? null, items: fromJson(r.items),
+        status: r.status, note: r.note ?? null,
+        createdAt: r.createdAt, updatedAt: r.updatedAt,
+      }))
+    })()
+  },
+
   saveKitchenOrders: (data: KitchenOrder[]) => {
     const d = getDb()
     const upsert = d.prepare(`

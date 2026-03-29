@@ -76,7 +76,7 @@ export async function POST(req: NextRequest) {
 
   // ---- Route items to Kitchen Stations ----
   const stations = db.getStations().filter(s => s.isActive)
-  const kitchenOrders = db.getKitchenOrders()
+  const newKitchenOrders: KitchenOrder[] = []
 
   if (stations.length > 0) {
     // Group sale items by stationId
@@ -101,7 +101,7 @@ export async function POST(req: NextRequest) {
       const station = stations.find(s => s.id === stationId)
       if (!station) continue
 
-      const ko: KitchenOrder = {
+      newKitchenOrders.push({
         id: uuidv4(),
         saleId: sale.id,
         receiptNo: sale.receiptNo,
@@ -112,18 +112,16 @@ export async function POST(req: NextRequest) {
         status: 'pending',
         createdAt: now,
         updatedAt: now,
-      }
-      kitchenOrders.push(ko)
+      })
     }
 
-    db.saveKitchenOrders(kitchenOrders)
+    db.addKitchenOrders(newKitchenOrders)
   }
 
   sales.push(sale)
   db.saveSales(sales)
 
   // Return sale + kitchen orders for this sale (so POS can show KOT)
-  const newKitchenOrders = kitchenOrders.filter(o => o.saleId === sale.id)
   return NextResponse.json({ ...sale, kitchenOrders: newKitchenOrders }, { status: 201 })
 }
 

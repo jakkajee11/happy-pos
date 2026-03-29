@@ -19,39 +19,78 @@ export async function GET(req: NextRequest) {
   return NextResponse.json(orders)
 }
 
-// POST — create new open order (hold order from POS)
+// POST — create new open order or merge into existing order for the same table
 export async function POST(req: NextRequest) {
   const body = await req.json()
   const orders = db.getOpenOrders()
   const now = new Date().toISOString()
 
-  const order: OpenOrder = {
-    id: uuidv4(),
-    orderNo: generateOrderNo(),
-    tableNo: body.tableNo,
-    items: body.items,
-    note: body.note,
-    memberId: body.memberId,
-    memberName: body.memberName,
-    discount: body.discount || 0,
-    discountNote: body.discountNote,
-    subtotal: body.subtotal,
-    total: body.total,
-    status: 'open',
-    createdAt: now,
-    updatedAt: now,
+  // ── ถ้ามี tableNo → ค้นหาออเดอร์ที่เปิดอยู่ของโต๊ะเดียวกัน ──
+  let order: OpenOrder
+  let isExisting = false
+  const existingIdx = body.tableNo
+    ? orders.findIndex(o => o.status === 'open' && o.tableNo === body.tableNo)
+    : -1
+
+  if (existingIdx !== -1) {
+    // รวมรายการเข้าออเดอร์เดิม
+    isExisting = true
+    const existing = orders[existingIdx]
+
+    // เพิ่ม items ใหม่เข้าไป (merge qty ถ้า productId ซ้ำ)
+    const mergedItems = [...existing.items]
+    for (const newItem of body.items) {
+      const idx = mergedItems.findIndex(i => i.productId === newItem.productId && (i.note ?? '') === (newItem.note ?? ''))
+      if (idx !== -1) {
+        mergedItems[idx] = {
+          ...mergedItems[idx],
+          qty: mergedItems[idx].qty + newItem.qty,
+          total: (mergedItems[idx].qty + newItem.qty) * mergedItems[idx].price,
+        }
+      } else {
+        mergedItems.push(newItem)
+      }
+    }
+
+    const newSubtotal = mergedItems.reduce((s, i) => s + i.total, 0)
+    orders[existingIdx] = {
+      ...existing,
+      items: mergedItems,
+      note: [existing.note, body.note].filter(Boolean).join(' | ') || undefined,
+      subtotal: newSubtotal,
+      total: newSubtotal - existing.discount,
+      updatedAt: now,
+    }
+    order = orders[existingIdx]
+    db.saveOpenOrders(orders)
+  } else {
+    // สร้างออเดอร์ใหม่
+    order = {
+      id: uuidv4(),
+      orderNo: generateOrderNo(),
+      tableNo: body.tableNo,
+      items: body.items,
+      note: body.note,
+      memberId: body.memberId,
+      memberName: body.memberName,
+      discount: body.discount || 0,
+      discountNote: body.discountNote,
+      subtotal: body.subtotal,
+      total: body.total,
+      status: 'open',
+      createdAt: now,
+      updatedAt: now,
+    }
+    orders.push(order)
+    db.saveOpenOrders(orders)
   }
 
-  orders.push(order)
-  db.saveOpenOrders(orders)
-
-  // ---- Route items to Kitchen Stations (same logic as sales) ----
+  // ---- Route items to Kitchen Stations ----
   const stations = db.getStations().filter(s => s.isActive)
-  let newKitchenOrders: KitchenOrder[] = []
+  const newKitchenOrders: KitchenOrder[] = []
 
   if (stations.length > 0) {
     const products = db.getProducts()
-    const kitchenOrders = db.getKitchenOrders()
     const stationItemMap = new Map<string, KitchenOrderItem[]>()
 
     for (const item of body.items) {
@@ -72,10 +111,10 @@ export async function POST(req: NextRequest) {
       const station = stations.find(s => s.id === stationId)
       if (!station) continue
 
-      const ko: KitchenOrder = {
+      newKitchenOrders.push({
         id: uuidv4(),
-        saleId: order.id,          // ใช้ order id แทน sale id
-        receiptNo: order.orderNo,  // ใช้ order no แทน receipt no
+        saleId: order.id,
+        receiptNo: order.orderNo,
         stationId,
         stationName: station.name,
         tableNo: body.tableNo,
@@ -83,12 +122,11 @@ export async function POST(req: NextRequest) {
         status: 'pending',
         createdAt: now,
         updatedAt: now,
-      }
-      kitchenOrders.push(ko)
-      newKitchenOrders.push(ko)
+      })
     }
 
-    db.saveKitchenOrders(kitchenOrders)
+    // ใช้ addKitchenOrders (INSERT ตรงๆ) แทน saveKitchenOrders (replace all)
+    db.addKitchenOrders(newKitchenOrders)
   }
 
   return NextResponse.json({ ...order, kitchenOrders: newKitchenOrders }, { status: 201 })

@@ -19,6 +19,75 @@ const typeConfig = {
   'new-order':  { icon: Bell, color: 'text-green-600', bg: 'bg-green-100', label: 'ออเดอร์ใหม่' },
 }
 
+// Compact version for sidebar — icon + badge only, click navigates to orders
+export function NotificationBadge() {
+  const [unreadCount, setUnreadCount] = useState(0)
+  const [shaking, setShaking] = useState(false)
+  const prevUnreadRef = useRef(0)
+
+  const fetchCount = useCallback(async () => {
+    try {
+      const res = await fetch('/api/notifications?status=unread')
+      if (!res.ok) return
+      const data: Notification[] = await res.json()
+      const count = data.length
+      if (count > prevUnreadRef.current) {
+        playAlertSound()
+        setShaking(true)
+        setTimeout(() => setShaking(false), 1500)
+      }
+      prevUnreadRef.current = count
+      setUnreadCount(count)
+    } catch { /* ignore */ }
+  }, [])
+
+  useEffect(() => {
+    fetchCount()
+    const t = setInterval(fetchCount, 5000)
+    return () => clearInterval(t)
+  }, [fetchCount])
+
+  return (
+    <a
+      href="/orders"
+      className={clsx(
+        'relative flex items-center justify-center w-10 h-10 rounded-xl transition-all',
+        unreadCount > 0
+          ? 'bg-red-50 text-red-500 hover:bg-red-100'
+          : 'text-gray-400 hover:bg-gray-100 hover:text-gray-600',
+        shaking && 'animate-bounce'
+      )}
+      title={unreadCount > 0 ? `${unreadCount} แจ้งเตือนใหม่` : 'แจ้งเตือน'}
+    >
+      <Bell size={20} />
+      {unreadCount > 0 && (
+        <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] w-5 h-5 rounded-full flex items-center justify-center font-bold animate-pulse">
+          {unreadCount > 9 ? '9+' : unreadCount}
+        </span>
+      )}
+    </a>
+  )
+}
+
+function playAlertSound() {
+  try {
+    const ctx = new AudioContext()
+    const notes = [880, 1100, 880]
+    notes.forEach((freq, i) => {
+      const o = ctx.createOscillator()
+      const g = ctx.createGain()
+      o.connect(g); g.connect(ctx.destination)
+      o.frequency.value = freq
+      o.type = 'sine'
+      const start = ctx.currentTime + i * 0.2
+      g.gain.setValueAtTime(0.4, start)
+      g.gain.exponentialRampToValueAtTime(0.001, start + 0.3)
+      o.start(start)
+      o.stop(start + 0.3)
+    })
+  } catch { /* ignore */ }
+}
+
 export default function NotificationBell() {
   const [notifications, setNotifications] = useState<Notification[]>([])
   const [open, setOpen] = useState(false)

@@ -48,6 +48,7 @@ export default function MenuClient({ products, categories, shopName, tableNo }: 
   const [billRequested, setBillRequested] = useState(false)
   const [callingStaff, setCallingStaff] = useState(false)
   const [staffCalled, setStaffCalled] = useState(false)
+  const [lastOrder, setLastOrder] = useState<PastOrder | null>(null)
 
   const filtered = products.filter(p => {
     if (selectedCat !== 'all' && p.categoryId !== selectedCat) return false
@@ -112,14 +113,17 @@ export default function MenuClient({ products, categories, shopName, tableNo }: 
       setOrderNo(data.orderNo)
 
       // Save to past orders
-      setPastOrders(prev => [...prev, {
+      const newOrder: PastOrder = {
         orderNo: data.orderNo,
         items: [...cart],
         subtotal,
         total: subtotal,
         createdAt: new Date().toISOString(),
-      }])
-
+      }
+      setPastOrders(prev => [...prev, newOrder])
+      setLastOrder(newOrder)
+      setCart([])
+      setOrderNote('')
       setScreen('done')
     } catch {
       alert('เกิดข้อผิดพลาด กรุณาลองใหม่')
@@ -169,17 +173,17 @@ export default function MenuClient({ products, categories, shopName, tableNo }: 
   }
 
   // ─── Done Screen ─────────────────────────────────────────────
-  if (screen === 'done') {
+  if (screen === 'done' && lastOrder) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center p-6 text-center">
         <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mb-4">
           <CheckCircle size={40} className="text-green-500" />
         </div>
         <h1 className="text-2xl font-bold text-gray-800 mb-2">สั่งอาหารเรียบร้อย!</h1>
-        <p className="text-gray-500 mb-1">ออเดอร์: <span className="font-mono font-semibold text-orange-600">{orderNo}</span></p>
+        <p className="text-gray-500 mb-1">ออเดอร์: <span className="font-mono font-semibold text-orange-600">{lastOrder.orderNo}</span></p>
         {tableInput && <p className="text-gray-500 mb-6">โต๊ะ {tableInput}</p>}
         <div className="bg-orange-50 rounded-2xl p-4 mb-6 w-full max-w-sm text-left space-y-1">
-          {cart.map((item, i) => (
+          {lastOrder.items.map((item, i) => (
             <div key={i} className="flex justify-between text-sm">
               <span className="text-gray-700">{item.qty}× {item.productName}</span>
               <span className="text-gray-600">฿{fmt(item.total)}</span>
@@ -187,14 +191,14 @@ export default function MenuClient({ products, categories, shopName, tableNo }: 
           ))}
           <div className="border-t border-orange-200 pt-1 flex justify-between font-bold">
             <span>รวม</span>
-            <span className="text-orange-600">฿{fmt(subtotal)}</span>
+            <span className="text-orange-600">฿{fmt(lastOrder.total)}</span>
           </div>
         </div>
         <p className="text-sm text-gray-400 mb-6">กรุณารอสักครู่ พนักงานจะนำอาหารมาให้</p>
 
         <div className="flex gap-3 w-full max-w-sm">
           <button
-            onClick={() => { setCart([]); setScreen('menu'); setOrderNote('') }}
+            onClick={() => { setScreen('menu') }}
             className="flex-1 px-4 py-3 bg-orange-500 text-white rounded-2xl font-semibold hover:bg-orange-600 active:scale-95"
           >
             สั่งเพิ่ม

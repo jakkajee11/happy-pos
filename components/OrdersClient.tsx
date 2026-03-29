@@ -1,7 +1,7 @@
 'use client'
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { useRouter } from 'next/navigation'
-import { Trash2, RefreshCw, UtensilsCrossed, Clock } from 'lucide-react'
+import { Trash2, RefreshCw, UtensilsCrossed, Clock, X, AlertTriangle } from 'lucide-react'
 import clsx from 'clsx'
 import { OpenOrder } from '@/lib/db'
 import NotificationBell from './NotificationBell'
@@ -33,28 +33,39 @@ export default function OrdersClient({ initialOrders }: Props) {
   const [orders, setOrders] = useState(initialOrders)
   const [loading, setLoading] = useState(false)
 
+  // Cancel confirmation modal state
+  const [cancelTarget, setCancelTarget] = useState<{ id: string; orderNo: string; tableNo?: string } | null>(null)
+  const [cancelling, setCancelling] = useState(false)
+
   const refresh = useCallback(async () => {
     setLoading(true)
-    const res = await fetch('/api/orders?status=open')
-    const data = await res.json()
-    setOrders(data)
+    try {
+      const res = await fetch('/api/orders?status=open')
+      const data = await res.json()
+      setOrders(data)
+    } catch { /* ignore */ }
     setLoading(false)
   }, [])
 
-  // Poll every 15 seconds for new orders created from POS
+  // Poll every 15 seconds — pause when cancel modal is open
   useEffect(() => {
+    if (cancelTarget) return // หยุด polling ขณะ modal เปิดอยู่
     const t = setInterval(refresh, 15000)
     return () => clearInterval(t)
-  }, [refresh])
+  }, [refresh, cancelTarget])
 
-  const cancel = async (id: string, orderNo: string) => {
-    if (!confirm(`ยกเลิกออเดอร์ ${orderNo}?`)) return
-    await fetch(`/api/orders?id=${id}`, { method: 'DELETE' })
-    setOrders(prev => prev.filter(o => o.id !== id))
+  const confirmCancel = async () => {
+    if (!cancelTarget) return
+    setCancelling(true)
+    try {
+      await fetch(`/api/orders?id=${cancelTarget.id}`, { method: 'DELETE' })
+      setOrders(prev => prev.filter(o => o.id !== cancelTarget.id))
+    } catch { /* ignore */ }
+    setCancelling(false)
+    setCancelTarget(null)
   }
 
   const resumeInPOS = (order: OpenOrder) => {
-    // Encode order as URL params to pass to POS
     const params = new URLSearchParams({ orderId: order.id })
     router.push(`/pos?${params}`)
   }
@@ -169,7 +180,7 @@ export default function OrdersClient({ initialOrders }: Props) {
                     เปิด / ชำระ
                   </button>
                   <button
-                    onClick={() => cancel(order.id, order.orderNo)}
+                    onClick={() => setCancelTarget({ id: order.id, orderNo: order.orderNo, tableNo: order.tableNo })}
                     className="p-2 sm:p-2.5 border border-gray-200 text-gray-400 rounded-xl hover:border-red-300 hover:text-red-500 transition-colors min-h-[36px] sm:min-h-[40px] flex items-center justify-center"
                   >
                     <Trash2 size={16} />
@@ -178,6 +189,39 @@ export default function OrdersClient({ initialOrders }: Props) {
               </div>
             )
           })}
+        </div>
+      )}
+
+      {/* ─── Cancel Confirmation Modal ─── */}
+      {cancelTarget && (
+        <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4" onClick={() => setCancelTarget(null)}>
+          <div className="bg-white rounded-2xl shadow-2xl max-w-sm w-full overflow-hidden" onClick={e => e.stopPropagation()}>
+            <div className="p-6 text-center">
+              <div className="w-14 h-14 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <AlertTriangle size={28} className="text-red-500" />
+              </div>
+              <h3 className="text-lg font-bold text-gray-800 mb-2">ยกเลิกออเดอร์?</h3>
+              <p className="text-gray-500 text-sm">
+                {cancelTarget.tableNo ? `โต๊ะ ${cancelTarget.tableNo} — ` : ''}{cancelTarget.orderNo}
+              </p>
+              <p className="text-gray-400 text-xs mt-1">ออเดอร์ที่ยกเลิกจะไม่สามารถกู้คืนได้</p>
+            </div>
+            <div className="flex border-t border-gray-100">
+              <button
+                onClick={() => setCancelTarget(null)}
+                className="flex-1 py-3.5 text-gray-600 font-medium hover:bg-gray-50 transition-colors text-sm"
+              >
+                ไม่ใช่
+              </button>
+              <button
+                onClick={confirmCancel}
+                disabled={cancelling}
+                className="flex-1 py-3.5 text-red-600 font-bold hover:bg-red-50 transition-colors border-l border-gray-100 text-sm disabled:opacity-50"
+              >
+                {cancelling ? 'กำลังยกเลิก...' : 'ยกเลิกออเดอร์'}
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>

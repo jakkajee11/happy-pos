@@ -15,7 +15,7 @@ export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url)
   const status = searchParams.get('status') || 'open'
   const orders = db.getOpenOrders().filter(o => o.status === status)
-  orders.sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime())
+  orders.sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime())
   return NextResponse.json(orders)
 }
 

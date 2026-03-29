@@ -1,6 +1,6 @@
 'use client'
 import { useState, useCallback, useEffect } from 'react'
-import { Plus, Minus, ShoppingBag, X, ChevronLeft, CheckCircle, Receipt, Bell, ClipboardList } from 'lucide-react'
+import { Plus, Minus, ShoppingBag, X, ChevronLeft, CheckCircle, Receipt, Bell, ClipboardList, User, Star, Loader2 } from 'lucide-react'
 import clsx from 'clsx'
 import { Product, Category } from '@/lib/db'
 
@@ -22,18 +22,27 @@ interface PastOrder {
   createdAt: string
 }
 
+interface FoundMember {
+  id: string
+  name: string
+  phone: string
+  points: number
+}
+
 interface Props {
   products: Product[]
   categories: Category[]
   shopName: string
   tableNo: string
+  loyaltyEnabled?: boolean
+  pointsPerBaht?: number
 }
 
 const fmt = (n: number) => n.toLocaleString('th-TH', { minimumFractionDigits: 0, maximumFractionDigits: 2 })
 
 type Screen = 'menu' | 'cart' | 'done' | 'history'
 
-export default function MenuClient({ products, categories, shopName, tableNo }: Props) {
+export default function MenuClient({ products, categories, shopName, tableNo, loyaltyEnabled, pointsPerBaht = 10 }: Props) {
   const [selectedCat, setSelectedCat] = useState('all')
   const [cart, setCart] = useState<CartItem[]>([])
   const [screen, setScreen] = useState<Screen>('menu')
@@ -49,6 +58,13 @@ export default function MenuClient({ products, categories, shopName, tableNo }: 
   const [callingStaff, setCallingStaff] = useState(false)
   const [staffCalled, setStaffCalled] = useState(false)
   const [lastOrder, setLastOrder] = useState<PastOrder | null>(null)
+
+  // Member / loyalty
+  const [memberPhone, setMemberPhone] = useState('')
+  const [foundMember, setFoundMember] = useState<FoundMember | null>(null)
+  const [memberSearching, setMemberSearching] = useState(false)
+  const [memberError, setMemberError] = useState('')
+  const [lastPointsEarned, setLastPointsEarned] = useState(0)
 
   const filtered = products.filter(p => {
     if (selectedCat !== 'all' && p.categoryId !== selectedCat) return false
@@ -92,6 +108,29 @@ export default function MenuClient({ products, categories, shopName, tableNo }: 
   // Grand total from all past orders
   const grandTotal = pastOrders.reduce((s, o) => s + o.total, 0)
 
+  // Lookup member by phone
+  const lookupMember = async () => {
+    if (!memberPhone.trim()) return
+    setMemberSearching(true)
+    setMemberError('')
+    setFoundMember(null)
+    try {
+      const res = await fetch(`/api/members?search=${encodeURIComponent(memberPhone.trim())}`)
+      const members = await res.json()
+      // Find exact phone match
+      const match = members.find((m: FoundMember) => m.phone === memberPhone.trim())
+      if (match) {
+        setFoundMember(match)
+      } else {
+        setMemberError('ไม่พบสมาชิกจากเบอร์นี้')
+      }
+    } catch {
+      setMemberError('ค้นหาไม่สำเร็จ ลองใหม่')
+    } finally {
+      setMemberSearching(false)
+    }
+  }
+
   const submitOrder = async () => {
     if (cart.length === 0) return
     setSubmitting(true)
@@ -107,6 +146,8 @@ export default function MenuClient({ products, categories, shopName, tableNo }: 
           total: subtotal,
           discount: 0,
           source: 'qr-menu',
+          memberId: foundMember?.id,
+          memberName: foundMember?.name,
         }),
       })
       const data = await res.json()
@@ -122,6 +163,9 @@ export default function MenuClient({ products, categories, shopName, tableNo }: 
       }
       setPastOrders(prev => [...prev, newOrder])
       setLastOrder(newOrder)
+      if (foundMember) {
+        setLastPointsEarned(Math.floor(subtotal / pointsPerBaht))
+      }
       setCart([])
       setOrderNote('')
       setScreen('done')
@@ -194,6 +238,15 @@ export default function MenuClient({ products, categories, shopName, tableNo }: 
             <span className="text-orange-600">฿{fmt(lastOrder.total)}</span>
           </div>
         </div>
+        {lastPointsEarned > 0 && foundMember && (
+          <div className="bg-yellow-50 border border-yellow-200 rounded-2xl px-4 py-3 mb-4 w-full max-w-sm flex items-center gap-3">
+            <Star size={20} className="text-yellow-500 shrink-0" />
+            <div className="text-left">
+              <p className="text-sm font-medium text-yellow-800">คุณ{foundMember.name} ได้รับ +{lastPointsEarned} แต้ม</p>
+              <p className="text-xs text-yellow-600">แต้มจะถูกเพิ่มเมื่อชำระเงินเรียบร้อย</p>
+            </div>
+          </div>
+        )}
         <p className="text-sm text-gray-400 mb-6">กรุณารอสักครู่ พนักงานจะนำอาหารมาให้</p>
 
         <div className="flex gap-3 w-full max-w-sm">
@@ -396,6 +449,56 @@ export default function MenuClient({ products, categories, shopName, tableNo }: 
               className="w-full text-sm text-gray-700 placeholder-gray-300 bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 resize-none focus:outline-none focus:ring-2 focus:ring-orange-300"
             />
           </div>
+
+          {/* Member loyalty — optional */}
+          {loyaltyEnabled && (
+            <div className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100">
+              <div className="flex items-center gap-2 mb-2">
+                <Star size={16} className="text-yellow-500" />
+                <p className="text-sm font-medium text-gray-700">สะสมแต้มสมาชิก <span className="text-gray-400 font-normal">(ไม่บังคับ)</span></p>
+              </div>
+
+              {foundMember ? (
+                <div className="flex items-center justify-between bg-green-50 border border-green-200 rounded-xl px-3 py-2.5">
+                  <div className="flex items-center gap-2">
+                    <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center text-white text-xs font-bold">
+                      {foundMember.name[0]}
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-green-800">{foundMember.name}</p>
+                      <p className="text-xs text-green-600">แต้มสะสม: {foundMember.points.toLocaleString()} • จะได้รับ +{Math.floor(subtotal / pointsPerBaht)} แต้ม</p>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => { setFoundMember(null); setMemberPhone(''); setMemberError('') }}
+                    className="text-green-400 hover:text-green-600"
+                  >
+                    <X size={16} />
+                  </button>
+                </div>
+              ) : (
+                <div className="flex gap-2">
+                  <input
+                    value={memberPhone}
+                    onChange={e => { setMemberPhone(e.target.value); setMemberError('') }}
+                    onKeyDown={e => e.key === 'Enter' && lookupMember()}
+                    placeholder="เบอร์โทรสมาชิก เช่น 0812345678"
+                    inputMode="tel"
+                    className="flex-1 border border-gray-200 rounded-xl px-3 py-2 text-sm bg-gray-50 focus:outline-none focus:ring-2 focus:ring-yellow-300"
+                  />
+                  <button
+                    onClick={lookupMember}
+                    disabled={memberSearching || !memberPhone.trim()}
+                    className="px-4 py-2 bg-yellow-400 hover:bg-yellow-500 disabled:bg-gray-200 disabled:text-gray-400 text-yellow-900 rounded-xl text-sm font-medium active:scale-95 flex items-center gap-1"
+                  >
+                    {memberSearching ? <Loader2 size={14} className="animate-spin" /> : <User size={14} />}
+                    ค้นหา
+                  </button>
+                </div>
+              )}
+              {memberError && <p className="text-xs text-red-500 mt-1.5">{memberError}</p>}
+            </div>
+          )}
         </div>
 
         {/* Summary + Submit — sticky bottom */}

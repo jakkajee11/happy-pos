@@ -33,7 +33,7 @@ ${order.tableNo ? `<div class="table-no">โต๊ะ ${order.tableNo}</div>` : 
 <div class="divider"></div>
 ${order.items.map(i => `<div class="item"><span class="qty">${i.qty}×</span><span>${i.productName}</span></div>${i.note ? `<div class="note">⚠ ${i.note}</div>` : ''}`).join('')}
 <div class="footer">--- KOT ---</div>
-<script>window.onload=()=>{window.print();setTimeout(()=>window.close(),500)}<\/script>
+<script>window.onload=()=>{window.onafterprint=()=>window.close();setTimeout(()=>window.print(),300)}<\/script>
 </body></html>`
     const w = window.open('', '_blank', 'width=320,height=480')
     if (w) { w.document.write(html); w.document.close() }
@@ -1236,6 +1236,77 @@ export default function POSClient({ initialProducts, categories, members, promot
                   </div>
                 )
               })()}
+
+              {/* Member — quick lookup in payment step */}
+              {members.length > 0 && settings.pointsPerBaht > 0 && (
+                <div className="border border-gray-200 rounded-xl p-3">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-sm font-medium text-gray-700">⭐ สะสมแต้มสมาชิก</span>
+                    {selectedMember && (
+                      <button
+                        onClick={() => setSelectedMember(null)}
+                        className="text-xs text-gray-400 hover:text-red-500"
+                      >
+                        ยกเลิก
+                      </button>
+                    )}
+                  </div>
+                  {selectedMember ? (
+                    <div className="flex items-center gap-2.5 bg-green-50 border border-green-200 rounded-xl px-3 py-2">
+                      <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0">
+                        {selectedMember.name[0]}
+                      </div>
+                      <div className="min-w-0">
+                        <p className="text-sm font-medium text-green-800 truncate">{selectedMember.name}</p>
+                        <p className="text-xs text-green-600">{selectedMember.phone} · แต้ม {selectedMember.points.toLocaleString()} · จะได้ +{Math.floor(total / settings.pointsPerBaht)}</p>
+                      </div>
+                    </div>
+                  ) : (
+                    <div>
+                      <div className="flex gap-2">
+                        <input
+                          value={memberSearch}
+                          onChange={e => setMemberSearch(e.target.value)}
+                          placeholder="ค้นหาชื่อ หรือเบอร์โทร..."
+                          className="flex-1 border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-yellow-300"
+                        />
+                        {memberSearch && (
+                          <button
+                            onClick={() => setMemberSearch('')}
+                            className="text-gray-400 hover:text-gray-600 px-1"
+                          >
+                            <X size={16} />
+                          </button>
+                        )}
+                      </div>
+                      {memberSearch && (
+                        <div className="mt-2 max-h-36 overflow-y-auto space-y-1 border border-gray-100 rounded-lg">
+                          {filteredMembers.length > 0 ? filteredMembers.slice(0, 5).map(m => (
+                            <button
+                              key={m.id}
+                              onClick={() => { setSelectedMember(m); setMemberSearch('') }}
+                              className="w-full flex items-center gap-2 px-3 py-2 hover:bg-orange-50 text-left transition-colors text-sm"
+                            >
+                              <div className="w-7 h-7 bg-orange-100 rounded-full flex items-center justify-center text-orange-600 font-bold text-xs flex-shrink-0">
+                                {m.name[0]}
+                              </div>
+                              <div className="min-w-0">
+                                <p className="font-medium text-gray-800 truncate">{m.name}</p>
+                                <p className="text-xs text-gray-500">{m.phone} · แต้ม {m.points.toLocaleString()}</p>
+                              </div>
+                            </button>
+                          )) : (
+                            <p className="text-center text-gray-400 py-3 text-xs">ไม่พบสมาชิก</p>
+                          )}
+                        </div>
+                      )}
+                      {!memberSearch && (
+                        <p className="text-xs text-gray-400 mt-1.5">ไม่บังคับ — ข้ามได้หากไม่ต้องการสะสมแต้ม</p>
+                      )}
+                    </div>
+                  )}
+                </div>
+              )}
 
               {/* Confirm Button */}
               <button

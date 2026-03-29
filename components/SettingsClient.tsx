@@ -146,7 +146,7 @@ export default function SettingsClient({ initialSettings, initialStations, initi
       // Test browser print
       const w = window.open('', '_blank', 'width=320,height=400')
       if (w) {
-        w.document.write(`<html><body style="font-family:monospace;padding:16px"><h3>TEST PRINT</h3><p>${printer.name}</p><p>${new Date().toLocaleString('th-TH')}</p><script>window.onload=()=>{window.print();setTimeout(()=>window.close(),500)}<\/script></body></html>`)
+        w.document.write(`<html><body style="font-family:monospace;padding:16px"><h3>TEST PRINT</h3><p>${printer.name}</p><p>${new Date().toLocaleString('th-TH')}</p><script>window.onload=()=>{window.onafterprint=()=>window.close();setTimeout(()=>window.print(),300)}<\/script></body></html>`)
         w.document.close()
       }
     } else {
@@ -773,7 +773,7 @@ function QRMenuTab({ settings }: { settings: Settings }) {
   qr.addData('${url}');
   qr.make();
   document.getElementById('qr').innerHTML = qr.createImgTag(5,8);
-  window.onload=()=>{window.print();setTimeout(()=>window.close(),800)}
+  window.onload=()=>{window.onafterprint=()=>window.close();setTimeout(()=>window.print(),300)}
 <\/script>
 </body></html>`
     const w = window.open('', '_blank', 'width=400,height=500')

@@ -18,6 +18,8 @@ export default async function CustomerMenuPage({ searchParams }: Props) {
   const products = db.getProducts().filter(p => p.isActive)
   const categories = db.getCategories()
   const settings = db.getSettings()
+  const members = db.getMembers()
+  const hasLoyalty = settings.pointsPerBaht > 0 && members.length > 0
 
   return (
     <MenuClient
@@ -25,6 +27,8 @@ export default async function CustomerMenuPage({ searchParams }: Props) {
       categories={categories}
       shopName={settings.shopName}
       tableNo={table ?? ''}
+      loyaltyEnabled={hasLoyalty}
+      pointsPerBaht={settings.pointsPerBaht}
     />
   )
 }

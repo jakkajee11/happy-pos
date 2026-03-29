@@ -50,7 +50,12 @@ export default function ReceiptModal({ sale, settings, onClose }: Props) {
       </head>
       <body>
         ${content}
-        <script>window.onload = () => { window.print(); window.close(); }<\/script>
+        <script>
+          window.onload = () => {
+            window.onafterprint = () => window.close();
+            setTimeout(() => window.print(), 300);
+          };
+        <\/script>
       </body>
       </html>
     `)

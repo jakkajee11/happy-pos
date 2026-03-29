@@ -111,7 +111,7 @@ ${topProducts.length > 0 ? `
 
 <div class="divider"></div>
 <div class="center" style="margin-top:4px;font-size:10px">*** ปิดยอดประจำวัน ***</div>
-<script>window.onload=()=>{window.print();setTimeout(()=>window.close(),800)}<\/script>
+<script>window.onload=()=>{window.onafterprint=()=>window.close();setTimeout(()=>window.print(),300)}<\/script>
 </body></html>`
 
     const w = window.open('', '_blank', 'width=360,height=600')

@@ -63,7 +63,7 @@ function printKOT(order: KitchenOrder, stationColor: string) {
 ${order.items.map(i => `<div class="item">${String(i.qty).padStart(2)} x  ${i.productName}</div>${i.note ? `<div class="note-line">⚠ ${i.note}</div>` : ''}`).join('')}
 </div>
 <div class="footer">--- KOT ---</div>
-<script>window.onload=()=>{window.print();setTimeout(()=>window.close(),500)}<\/script>
+<script>window.onload=()=>{window.onafterprint=()=>window.close();setTimeout(()=>window.print(),300)}<\/script>
 </body></html>`
 
   const w = window.open('', '_blank', 'width=320,height=500')

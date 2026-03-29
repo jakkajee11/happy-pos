@@ -1,0 +1,1133 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>คู่มือติดตั้ง Happy POS</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;600;700&display=swap');
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Sarabun', sans-serif;
+            background: #f5f7fa;
+            color: #2d3748;
+            line-height: 1.8;
+            font-size: 17px;
+        }
+
+        /* Header */
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            text-align: center;
+            padding: 50px 20px;
+        }
+        .header h1 { font-size: 2.5em; margin-bottom: 10px; }
+        .header p { font-size: 1.2em; opacity: 0.9; }
+        .header .version {
+            display: inline-block;
+            background: rgba(255,255,255,0.2);
+            padding: 4px 16px;
+            border-radius: 20px;
+            margin-top: 10px;
+            font-size: 0.9em;
+        }
+
+        /* Container */
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        /* OS Tabs */
+        .os-tabs {
+            display: flex;
+            gap: 0;
+            margin: 30px 0 0 0;
+            justify-content: center;
+        }
+        .os-tab {
+            padding: 16px 40px;
+            font-size: 1.1em;
+            font-weight: 600;
+            cursor: pointer;
+            border: 2px solid #e2e8f0;
+            background: #fff;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .os-tab:first-child { border-radius: 12px 0 0 12px; }
+        .os-tab:last-child { border-radius: 0 12px 12px 0; }
+        .os-tab.active {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+        .os-tab:hover:not(.active) {
+            background: #edf2f7;
+        }
+        .os-icon { font-size: 1.4em; }
+
+        /* Content */
+        .os-content { display: none; }
+        .os-content.active { display: block; }
+
+        /* Cards */
+        .card {
+            background: white;
+            border-radius: 16px;
+            padding: 30px;
+            margin: 25px 0;
+            box-shadow: 0 2px 15px rgba(0,0,0,0.06);
+            border: 1px solid #e8ecf1;
+        }
+        .card h2 {
+            font-size: 1.4em;
+            color: #4a5568;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .card h2 .step-num {
+            background: #667eea;
+            color: white;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.85em;
+            flex-shrink: 0;
+        }
+
+        /* Steps */
+        .step-detail {
+            background: #f7fafc;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 15px 0;
+            border-left: 4px solid #667eea;
+        }
+        .step-detail p { margin: 8px 0; }
+
+        /* Screenshots placeholder */
+        .screenshot {
+            background: #edf2f7;
+            border: 2px dashed #cbd5e0;
+            border-radius: 10px;
+            padding: 30px;
+            text-align: center;
+            margin: 15px 0;
+            color: #a0aec0;
+            font-style: italic;
+        }
+        .screenshot img {
+            max-width: 100%;
+            border-radius: 8px;
+        }
+
+        /* Code blocks */
+        .code-block {
+            background: #1a202c;
+            color: #e2e8f0;
+            border-radius: 10px;
+            padding: 18px 22px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.95em;
+            margin: 12px 0;
+            position: relative;
+            overflow-x: auto;
+            line-height: 1.6;
+        }
+        .code-block .comment { color: #68d391; }
+        .code-block .highlight { color: #fbd38d; font-weight: bold; }
+
+        /* Warning / Info boxes */
+        .warning-box {
+            background: #fffaf0;
+            border: 1px solid #fbd38d;
+            border-radius: 10px;
+            padding: 18px 20px;
+            margin: 15px 0;
+            display: flex;
+            gap: 12px;
+            align-items: flex-start;
+        }
+        .warning-box .icon { font-size: 1.5em; flex-shrink: 0; }
+
+        .info-box {
+            background: #ebf8ff;
+            border: 1px solid #90cdf4;
+            border-radius: 10px;
+            padding: 18px 20px;
+            margin: 15px 0;
+            display: flex;
+            gap: 12px;
+            align-items: flex-start;
+        }
+        .info-box .icon { font-size: 1.5em; flex-shrink: 0; }
+
+        .success-box {
+            background: #f0fff4;
+            border: 1px solid #9ae6b4;
+            border-radius: 10px;
+            padding: 18px 20px;
+            margin: 15px 0;
+            display: flex;
+            gap: 12px;
+            align-items: flex-start;
+        }
+        .success-box .icon { font-size: 1.5em; flex-shrink: 0; }
+
+        /* Image guides */
+        .visual-step {
+            display: flex;
+            gap: 20px;
+            align-items: flex-start;
+            margin: 15px 0;
+        }
+        .visual-step .number {
+            background: #667eea;
+            color: white;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            flex-shrink: 0;
+            margin-top: 2px;
+        }
+        .visual-step .content { flex: 1; }
+
+        /* Inline keyboard key */
+        kbd {
+            background: #edf2f7;
+            border: 1px solid #cbd5e0;
+            border-radius: 4px;
+            padding: 2px 8px;
+            font-size: 0.9em;
+            font-family: 'Courier New', monospace;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+        }
+
+        /* FAQ */
+        .faq-item {
+            border-bottom: 1px solid #e2e8f0;
+            padding: 18px 0;
+        }
+        .faq-item:last-child { border-bottom: none; }
+        .faq-q {
+            font-weight: 600;
+            color: #4a5568;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .faq-q:hover { color: #667eea; }
+        .faq-a {
+            margin-top: 10px;
+            color: #718096;
+            display: none;
+        }
+        .faq-item.open .faq-a { display: block; }
+        .faq-toggle {
+            font-size: 1.2em;
+            transition: transform 0.3s;
+        }
+        .faq-item.open .faq-toggle { transform: rotate(45deg); }
+
+        /* Footer */
+        .footer {
+            text-align: center;
+            padding: 30px;
+            color: #a0aec0;
+            font-size: 0.9em;
+        }
+
+        /* Quick start box */
+        .quick-start {
+            background: linear-gradient(135deg, #f6f9fc 0%, #edf2f7 100%);
+            border: 2px solid #667eea;
+            border-radius: 16px;
+            padding: 30px;
+            margin: 25px 0;
+            text-align: center;
+        }
+        .quick-start h2 {
+            color: #667eea;
+            margin-bottom: 10px;
+            justify-content: center;
+        }
+        .quick-start p { color: #718096; margin-bottom: 15px; }
+        .quick-start .btn {
+            display: inline-block;
+            background: #667eea;
+            color: white;
+            padding: 12px 30px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 1.1em;
+        }
+
+        /* Requirement list */
+        .req-list {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin: 15px 0;
+        }
+        .req-item {
+            background: #f7fafc;
+            padding: 14px 18px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .req-item .check { color: #48bb78; font-size: 1.2em; }
+
+        /* TOC */
+        .toc {
+            background: white;
+            border-radius: 16px;
+            padding: 25px 30px;
+            margin: 25px 0;
+            box-shadow: 0 2px 15px rgba(0,0,0,0.06);
+            border: 1px solid #e8ecf1;
+        }
+        .toc h3 {
+            margin-bottom: 12px;
+            color: #4a5568;
+        }
+        .toc ul {
+            list-style: none;
+        }
+        .toc li {
+            padding: 6px 0;
+        }
+        .toc a {
+            color: #667eea;
+            text-decoration: none;
+        }
+        .toc a:hover { text-decoration: underline; }
+
+        @media (max-width: 600px) {
+            .header h1 { font-size: 1.8em; }
+            .os-tab { padding: 12px 20px; font-size: 1em; }
+            .req-list { grid-template-columns: 1fr; }
+            .visual-step { flex-direction: column; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- Header -->
+<div class="header">
+    <h1>🧾 Happy POS</h1>
+    <p>คู่มือการติดตั้งระบบ POS สำหรับร้านค้า</p>
+    <div class="version">เวอร์ชัน 1.0 | อัปเดต มีนาคม 2026</div>
+</div>
+
+<div class="container">
+
+    <!-- Quick Start -->
+    <div class="quick-start">
+        <h2>สำหรับคนใจร้อน — ติดตั้ง 1 คลิก!</h2>
+        <p>ดับเบิลคลิกไฟล์ติดตั้งในโฟลเดอร์ Happy POS ที่ได้รับ (จาก USB หรือ ZIP) — ระบบจะติดตั้งทุกอย่างให้อัตโนมัติ ไม่ต้องดาวน์โหลดจาก GitHub!</p>
+        <div style="display: flex; gap: 15px; justify-content: center; flex-wrap: wrap;">
+            <span class="btn" style="background: #667eea; color: white; padding: 12px 30px; border-radius: 8px; font-weight: 600;">🪟 Windows: install-windows.bat</span>
+            <span class="btn" style="background: #764ba2; color: white; padding: 12px 30px; border-radius: 8px; font-weight: 600;">🍎 Mac: install-mac.command</span>
+        </div>
+        <p style="margin-top: 12px; font-size: 0.9em; color: #718096;">Script จะตรวจจับอัตโนมัติ — ถ้ามีไฟล์โปรเจกต์อยู่จะใช้จากเครื่อง ถ้าไม่มีจะดาวน์โหลดจาก GitHub</p>
+    </div>
+
+    <!-- OS Tabs -->
+    <div class="os-tabs">
+        <div class="os-tab active" onclick="switchOS('windows')">
+            <span class="os-icon">🪟</span> Windows
+        </div>
+        <div class="os-tab" onclick="switchOS('mac')">
+            <span class="os-icon">🍎</span> Mac
+        </div>
+    </div>
+
+    <!-- ===================== WINDOWS ===================== -->
+    <div id="windows-content" class="os-content active">
+
+        <!-- TOC -->
+        <div class="toc">
+            <h3>สารบัญ</h3>
+            <ul>
+                <li>📋 <a href="#win-req">สิ่งที่ต้องมี</a></li>
+                <li>💾 <a href="#win-usb">วิธีที่ 1: ติดตั้งจากไฟล์ที่ได้รับ — USB / ZIP (แนะนำ)</a></li>
+                <li>🚀 <a href="#win-auto">วิธีที่ 2: ติดตั้งจาก GitHub (ต้องมีอินเทอร์เน็ต)</a></li>
+                <li>📝 <a href="#win-manual">วิธีที่ 3: ติดตั้งด้วยตัวเอง (step by step)</a></li>
+                <li>▶️ <a href="#win-start">วิธีเปิดใช้งาน</a></li>
+                <li>📱 <a href="#win-mobile">ดูจากมือถือ</a></li>
+                <li>❓ <a href="#win-faq">คำถามที่พบบ่อย</a></li>
+            </ul>
+        </div>
+
+        <!-- สิ่งที่ต้องมี -->
+        <div class="card" id="win-req">
+            <h2>📋 สิ่งที่ต้องมี</h2>
+            <div class="req-list">
+                <div class="req-item">
+                    <span class="check">✓</span>
+                    <span>คอมพิวเตอร์ Windows 10 ขึ้นไป</span>
+                </div>
+                <div class="req-item">
+                    <span class="check">✓</span>
+                    <span>อินเทอร์เน็ต (ตอนติดตั้งครั้งแรก)</span>
+                </div>
+                <div class="req-item">
+                    <span class="check">✓</span>
+                    <span>พื้นที่ว่างอย่างน้อย 500 MB</span>
+                </div>
+                <div class="req-item">
+                    <span class="check">✓</span>
+                    <span>สิทธิ์ Administrator</span>
+                </div>
+            </div>
+            <div class="info-box">
+                <span class="icon">💡</span>
+                <div>ไม่ต้องติดตั้งโปรแกรมอื่นเอง — ตัวติดตั้งจะจัดการให้ทั้งหมด!</div>
+            </div>
+        </div>
+
+        <!-- วิธีที่ 1: ติดตั้งจากไฟล์ USB / ZIP -->
+        <div class="card" id="win-usb">
+            <h2><span class="step-num">1</span> วิธีที่ 1: ติดตั้งจากไฟล์ที่ได้รับ — USB / ZIP (แนะนำ)</h2>
+            <p>วิธีนี้ง่ายที่สุดและเร็วที่สุด! ไม่ต้องดาวน์โหลดจากอินเทอร์เน็ต (ยกเว้น Node.js ถ้ายังไม่มี)</p>
+
+            <div class="info-box">
+                <span class="icon">💡</span>
+                <div>
+                    <strong>วิธีนี้เหมาะสำหรับ:</strong> ได้รับไฟล์ Happy POS ทั้งโฟลเดอร์ผ่าน USB, ZIP, หรือคัดลอกจากเครื่องอื่น<br>
+                    ไม่ต้องติดตั้ง Git เพราะใช้ไฟล์จากเครื่องโดยตรง
+                </div>
+            </div>
+
+            <div class="step-detail">
+                <div class="visual-step">
+                    <div class="number">1</div>
+                    <div class="content">
+                        <strong>เตรียมไฟล์ Happy POS</strong>
+                        <p>ถ้าได้รับเป็นไฟล์ ZIP → คลิกขวาแล้วเลือก <strong>"Extract All..."</strong> (แตกไฟล์ทั้งหมด)</p>
+                        <p>ถ้าได้รับจาก USB → คัดลอกโฟลเดอร์ <strong>happy-pos</strong> ทั้งหมดมาไว้ในเครื่อง</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="step-detail">
+                <div class="visual-step">
+                    <div class="number">2</div>
+                    <div class="content">
+                        <strong>เปิดโฟลเดอร์ Happy POS แล้วหาไฟล์ <code>install-windows.bat</code></strong>
+                        <div class="screenshot">
+                            📁 happy-pos/<br>
+                            &nbsp;&nbsp;├── 📄 <strong style="color: #667eea;">install-windows.bat</strong> ← ไฟล์นี้!<br>
+                            &nbsp;&nbsp;├── 📄 start-happy-pos.bat<br>
+                            &nbsp;&nbsp;├── 📄 package.json<br>
+                            &nbsp;&nbsp;├── 📁 app/<br>
+                            &nbsp;&nbsp;├── 📁 components/<br>
+                            &nbsp;&nbsp;└── 📁 lib/
+                        </div>
+                        <div class="success-box">
+                            <span class="icon">✨</span>
+                            <div>Script จะตรวจพบ <code>package.json</code> ในโฟลเดอร์เดียวกันอัตโนมัติ และจะใช้ไฟล์จากเครื่องเลย — <strong>ไม่ต้องดาวน์โหลดจาก GitHub, ไม่ต้องติดตั้ง Git</strong></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="step-detail">
+                <div class="visual-step">
+                    <div class="number">3</div>
+                    <div class="content">
+                        <strong>ดับเบิลคลิกที่ไฟล์ <code>install-windows.bat</code></strong>
+                        <p>Script จะขอสิทธิ์ผู้ดูแลระบบอัตโนมัติ — ถ้ามีหน้าต่างถาม ให้กด <strong>"Yes"</strong> หรือ <strong>"ใช่"</strong></p>
+                        <div class="warning-box">
+                            <span class="icon">⚠️</span>
+                            <div>
+                                <strong>ถ้า Windows แจ้งเตือน "Windows protected your PC"</strong><br>
+                                คลิก <strong>"More info"</strong> แล้วคลิก <strong>"Run anyway"</strong>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="step-detail">
+                <div class="visual-step">
+                    <div class="number">4</div>
+                    <div class="content">
+                        <strong>รอ — ไม่ต้องทำอะไรเลย! (ประมาณ 3-5 นาที)</strong>
+                        <p>ระบบจะทำทุกอย่างให้อัตโนมัติ:</p>
+                        <p>✅ ตรวจสอบและติดตั้ง Node.js (ถ้ายังไม่มี)</p>
+                        <p>⏭️ ข้ามการติดตั้ง Git (ไม่จำเป็นเมื่อมีไฟล์ในเครื่อง!)</p>
+                        <p>✅ คัดลอกไฟล์ไปที่ <code>C:\Users\[ชื่อ]\HappyPOS</code></p>
+                        <p>✅ ติดตั้ง packages ที่จำเป็น</p>
+                        <p>✅ สร้างฐานข้อมูลเริ่มต้น</p>
+                        <p>✅ สร้าง shortcut "Happy POS" บน Desktop</p>
+                        <p>✅ <strong>เปิด Happy POS ให้อัตโนมัติทันที!</strong></p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="success-box">
+                <span class="icon">🎉</span>
+                <div>เมื่อติดตั้งเสร็จ <strong>เบราว์เซอร์จะเปิด Happy POS ให้อัตโนมัติ</strong> — ไม่ต้องกดอะไรเพิ่มเลย! ครั้งต่อไปแค่ดับเบิลคลิก "Happy POS" บน Desktop</div>
+            </div>
+        </div>
+
+        <!-- วิธีที่ 2: จาก GitHub -->
+        <div class="card" id="win-auto">
+            <h2><span class="step-num">2</span> วิธีที่ 2: ติดตั้งจาก GitHub (ต้องมีอินเทอร์เน็ต)</h2>
+            <p>ใช้ script เดียวกัน แต่ไม่ต้องมีไฟล์โปรเจกต์ — ดาวน์โหลดจาก GitHub อัตโนมัติ</p>
+
+            <div class="step-detail">
+                <div class="visual-step">
+                    <div class="number">1</div>
+                    <div class="content">
+                        <strong>ดาวน์โหลดเฉพาะไฟล์ <code>install-windows.bat</code></strong>
+                        <p>ดาวน์โหลดจาก GitHub หรือขอจากผู้ดูแลระบบ</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="step-detail">
+                <div class="visual-step">
+                    <div class="number">2</div>
+                    <div class="content">
+                        <strong>วางไฟล์ไว้ที่ไหนก็ได้ แล้วดับเบิลคลิก</strong>
+                        <p>Script จะขอสิทธิ์ผู้ดูแลระบบอัตโนมัติ และตรวจพบว่าไม่มี <code>package.json</code> ข้างๆ จะดาวน์โหลดจาก GitHub อัตโนมัติ</p>
+                        <div class="warning-box">
+                            <span class="icon">⚠️</span>
+                            <div>
+                                <strong>ถ้า Windows แจ้งเตือน "Windows protected your PC"</strong><br>
+                                คลิก <strong>"More info"</strong> แล้วคลิก <strong>"Run anyway"</strong>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="step-detail">
+                <div class="visual-step">
+                    <div class="number">3</div>
+                    <div class="content">
+                        <strong>รอให้ติดตั้งเสร็จ (ประมาณ 5-10 นาที)</strong>
+                        <p>ระบบจะ:</p>
+                        <p>✅ ติดตั้ง Node.js + Git อัตโนมัติ (ถ้ายังไม่มี)</p>
+                        <p>✅ ดาวน์โหลด Happy POS จาก GitHub</p>
+                        <p>✅ ติดตั้ง packages + สร้างฐานข้อมูล + สร้าง shortcut</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="success-box">
+                <span class="icon">🎉</span>
+                <div>เมื่อเห็นข้อความ <strong>"ติดตั้ง Happy POS สำเร็จแล้ว!"</strong> แสดงว่าเสร็จเรียบร้อย!</div>
+            </div>
+        </div>
+
+        <!-- วิธีที่ 3: Manual -->
+        <div class="card" id="win-manual">
+            <h2><span class="step-num">3</span> วิธีที่ 3: ติดตั้งด้วยตัวเอง (step by step)</h2>
+            <p>สำหรับผู้ที่ต้องการติดตั้งเอง หรือ script อัตโนมัติมีปัญหา</p>
+
+            <h3 style="margin: 20px 0 10px; color: #667eea;">ขั้นตอนที่ 1: ติดตั้ง Node.js</h3>
+            <div class="step-detail">
+                <div class="visual-step">
+                    <div class="number">1</div>
+                    <div class="content">
+                        <strong>เปิด browser ไปที่ <a href="https://nodejs.org" target="_blank">https://nodejs.org</a></strong>
+                        <p>เลือกดาวน์โหลดปุ่มสีเขียว <strong>"LTS"</strong> (Long Term Support)</p>
+                    </div>
+                </div>
+                <div class="visual-step">
+                    <div class="number">2</div>
+                    <div class="content">
+                        <strong>ดับเบิลคลิกไฟล์ที่ดาวน์โหลด</strong>
+                        <p>กด <strong>Next → Next → Next → Install → Finish</strong> (ใช้ค่าเริ่มต้นทั้งหมด)</p>
+                    </div>
+                </div>
+                <div class="visual-step">
+                    <div class="number">3</div>
+                    <div class="content">
+                        <strong>ตรวจสอบ: เปิด Command Prompt แล้วพิมพ์</strong>
+                        <div class="code-block">node -v</div>
+                        <p>ถ้าเห็นเลขเวอร์ชัน เช่น <code>v20.18.0</code> แสดงว่าสำเร็จ!</p>
+                    </div>
+                </div>
+                <div class="info-box">
+                    <span class="icon">💡</span>
+                    <div><strong>วิธีเปิด Command Prompt:</strong> กดปุ่ม <kbd>Win</kbd> + <kbd>R</kbd> แล้วพิมพ์ <code>cmd</code> แล้วกด Enter</div>
+                </div>
+            </div>
+
+            <h3 style="margin: 20px 0 10px; color: #667eea;">ขั้นตอนที่ 2: ติดตั้ง Git</h3>
+            <div class="step-detail">
+                <div class="visual-step">
+                    <div class="number">1</div>
+                    <div class="content">
+                        <strong>เปิด browser ไปที่ <a href="https://git-scm.com" target="_blank">https://git-scm.com</a></strong>
+                        <p>คลิก <strong>"Download for Windows"</strong></p>
+                    </div>
+                </div>
+                <div class="visual-step">
+                    <div class="number">2</div>
+                    <div class="content">
+                        <strong>ดับเบิลคลิกไฟล์ที่ดาวน์โหลด</strong>
+                        <p>กด <strong>Next</strong> ไปเรื่อยๆ จนกด <strong>Install → Finish</strong> (ใช้ค่าเริ่มต้นทั้งหมด)</p>
+                    </div>
+                </div>
+            </div>
+
+            <h3 style="margin: 20px 0 10px; color: #667eea;">ขั้นตอนที่ 3: ดาวน์โหลดและติดตั้ง Happy POS</h3>
+            <div class="step-detail">
+                <div class="visual-step">
+                    <div class="number">1</div>
+                    <div class="content">
+                        <strong>เปิด Command Prompt แล้วพิมพ์คำสั่งนี้ทีละบรรทัด:</strong>
+                        <div class="code-block">
+                            <span class="comment"># ดาวน์โหลด Happy POS</span><br>
+                            git clone https://github.com/happydaddy/happy-pos.git %USERPROFILE%\HappyPOS<br><br>
+                            <span class="comment"># เข้าไปในโฟลเดอร์</span><br>
+                            cd %USERPROFILE%\HappyPOS<br><br>
+                            <span class="comment"># ติดตั้ง packages</span><br>
+                            npm install<br><br>
+                            <span class="comment"># สร้างฐานข้อมูลเริ่มต้น</span><br>
+                            npm run init-db
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- วิธีเปิดใช้งาน -->
+        <div class="card" id="win-start">
+            <h2><span class="step-num">▶</span> วิธีเปิดใช้งาน Happy POS</h2>
+
+            <div class="step-detail">
+                <h3 style="color: #48bb78;">วิธีที่ 1: ดับเบิลคลิก shortcut (ง่ายที่สุด)</h3>
+                <p>ดับเบิลคลิกที่ไอคอน <strong>"Happy POS"</strong> บน Desktop</p>
+                <p>ระบบจะเปิด server และเปิด browser ให้อัตโนมัติ</p>
+            </div>
+
+            <div class="step-detail">
+                <h3 style="color: #667eea;">วิธีที่ 2: ดับเบิลคลิกไฟล์ start</h3>
+                <p>ไปที่โฟลเดอร์ Happy POS แล้วดับเบิลคลิก <strong>start-happy-pos.bat</strong></p>
+            </div>
+
+            <div class="warning-box">
+                <span class="icon">⚠️</span>
+                <div>
+                    <strong>อย่าปิดหน้าต่างสีดำ (Command Prompt)!</strong><br>
+                    หน้าต่างนี้คือ server ของ Happy POS — ถ้าปิดจะใช้งานไม่ได้<br>
+                    เมื่อใช้งานเสร็จ กด <kbd>Ctrl</kbd> + <kbd>C</kbd> เพื่อปิด server
+                </div>
+            </div>
+
+            <div class="info-box">
+                <span class="icon">🌐</span>
+                <div>
+                    หลังจากเปิด server แล้ว สามารถเปิด browser เองได้ที่:<br>
+                    <strong style="font-size: 1.1em;">http://localhost:21300</strong>
+                </div>
+            </div>
+        </div>
+
+        <!-- ดูจากมือถือ -->
+        <div class="card" id="win-mobile">
+            <h2><span class="step-num">📱</span> ดูจากมือถือ (ผ่าน Wi-Fi เดียวกัน)</h2>
+
+            <div class="step-detail">
+                <div class="visual-step">
+                    <div class="number">1</div>
+                    <div class="content">
+                        <strong>ต่อมือถือกับ Wi-Fi เดียวกับคอมพิวเตอร์</strong>
+                    </div>
+                </div>
+                <div class="visual-step">
+                    <div class="number">2</div>
+                    <div class="content">
+                        <strong>หา IP ของคอมพิวเตอร์</strong>
+                        <p>เปิด Command Prompt แล้วพิมพ์:</p>
+                        <div class="code-block">ipconfig</div>
+                        <p>ดูที่บรรทัด <strong>"IPv4 Address"</strong> เช่น <code>192.168.1.100</code></p>
+                    </div>
+                </div>
+                <div class="visual-step">
+                    <div class="number">3</div>
+                    <div class="content">
+                        <strong>เปิด browser บนมือถือ</strong>
+                        <p>พิมพ์: <strong>http://192.168.1.100:21300</strong></p>
+                        <p>(เปลี่ยน IP ตามที่ได้จากขั้นตอนที่ 2)</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- FAQ Windows -->
+        <div class="card" id="win-faq">
+            <h2>❓ คำถามที่พบบ่อย (Windows)</h2>
+
+            <div class="faq-item" onclick="this.classList.toggle('open')">
+                <div class="faq-q">
+                    ติดตั้งแล้วเปิดไม่ขึ้น ทำอย่างไร?
+                    <span class="faq-toggle">+</span>
+                </div>
+                <div class="faq-a">
+                    <p>1. ตรวจสอบว่า Node.js ติดตั้งสำเร็จ: เปิด CMD พิมพ์ <code>node -v</code></p>
+                    <p>2. ลองรัน <code>npm install</code> อีกครั้งในโฟลเดอร์ HappyPOS</p>
+                    <p>3. ตรวจสอบว่า Firewall ไม่ได้บล็อก port 21300</p>
+                </div>
+            </div>
+
+            <div class="faq-item" onclick="this.classList.toggle('open')">
+                <div class="faq-q">
+                    "Windows protected your PC" ขึ้นมา ต้องทำอย่างไร?
+                    <span class="faq-toggle">+</span>
+                </div>
+                <div class="faq-a">
+                    <p>นี่เป็นเรื่องปกติสำหรับ script ที่ดาวน์โหลดจากอินเทอร์เน็ต</p>
+                    <p>1. คลิก <strong>"More info"</strong> (ข้อมูลเพิ่มเติม)</p>
+                    <p>2. คลิก <strong>"Run anyway"</strong> (รันต่อไป)</p>
+                </div>
+            </div>
+
+            <div class="faq-item" onclick="this.classList.toggle('open')">
+                <div class="faq-q">
+                    จะอัปเดต Happy POS ทำอย่างไร?
+                    <span class="faq-toggle">+</span>
+                </div>
+                <div class="faq-a">
+                    <p>รัน <code>install-windows.bat</code> อีกครั้ง ระบบจะตรวจสอบและอัปเดตให้อัตโนมัติ</p>
+                </div>
+            </div>
+
+            <div class="faq-item" onclick="this.classList.toggle('open')">
+                <div class="faq-q">
+                    ไม่มีอินเทอร์เน็ต ใช้งานได้ไหม?
+                    <span class="faq-toggle">+</span>
+                </div>
+                <div class="faq-a">
+                    <p>ได้! หลังจากติดตั้งเสร็จแล้ว Happy POS ทำงานแบบ offline ได้ทั้งหมด</p>
+                    <p>ต้องมีอินเทอร์เน็ตเฉพาะตอนติดตั้งครั้งแรกเท่านั้น</p>
+                </div>
+            </div>
+
+            <div class="faq-item" onclick="this.classList.toggle('open')">
+                <div class="faq-q">
+                    ข้อมูลร้านค้าเก็บไว้ที่ไหน?
+                    <span class="faq-toggle">+</span>
+                </div>
+                <div class="faq-a">
+                    <p>ข้อมูลทั้งหมดเก็บในเครื่องคอมพิวเตอร์ของคุณที่:</p>
+                    <p><code>C:\Users\[ชื่อผู้ใช้]\HappyPOS\data\</code></p>
+                    <p>แนะนำให้สำรองข้อมูลโฟลเดอร์ <code>data</code> เป็นประจำ</p>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- ===================== MAC ===================== -->
+    <div id="mac-content" class="os-content">
+
+        <!-- TOC -->
+        <div class="toc">
+            <h3>สารบัญ</h3>
+            <ul>
+                <li>📋 <a href="#mac-req">สิ่งที่ต้องมี</a></li>
+                <li>💾 <a href="#mac-usb">วิธีที่ 1: ติดตั้งจากไฟล์ที่ได้รับ — USB / ZIP (แนะนำ)</a></li>
+                <li>🚀 <a href="#mac-auto">วิธีที่ 2: ติดตั้งจาก GitHub (ต้องมีอินเทอร์เน็ต)</a></li>
+                <li>📝 <a href="#mac-manual">วิธีที่ 3: ติดตั้งด้วยตัวเอง (step by step)</a></li>
+                <li>▶️ <a href="#mac-start">วิธีเปิดใช้งาน</a></li>
+                <li>📱 <a href="#mac-mobile">ดูจากมือถือ</a></li>
+                <li>❓ <a href="#mac-faq">คำถามที่พบบ่อย</a></li>
+            </ul>
+        </div>
+
+        <!-- สิ่งที่ต้องมี -->
+        <div class="card" id="mac-req">
+            <h2>📋 สิ่งที่ต้องมี</h2>
+            <div class="req-list">
+                <div class="req-item">
+                    <span class="check">✓</span>
+                    <span>Mac ที่ใช้ macOS 12 ขึ้นไป</span>
+                </div>
+                <div class="req-item">
+                    <span class="check">✓</span>
+                    <span>อินเทอร์เน็ต (ตอนติดตั้งครั้งแรก)</span>
+                </div>
+                <div class="req-item">
+                    <span class="check">✓</span>
+                    <span>พื้นที่ว่างอย่างน้อย 500 MB</span>
+                </div>
+                <div class="req-item">
+                    <span class="check">✓</span>
+                    <span>รู้รหัสผ่านเครื่อง Mac</span>
+                </div>
+            </div>
+            <div class="info-box">
+                <span class="icon">💡</span>
+                <div>ไม่ต้องติดตั้งโปรแกรมอื่นเอง — ตัวติดตั้งจะจัดการให้ทั้งหมด!</div>
+            </div>
+        </div>
+
+        <!-- วิธีที่ 1: ติดตั้งจากไฟล์ USB / ZIP -->
+        <div class="card" id="mac-usb">
+            <h2><span class="step-num">1</span> วิธีที่ 1: ติดตั้งจากไฟล์ที่ได้รับ — USB / ZIP (แนะนำ)</h2>
+            <p>วิธีนี้ง่ายที่สุดและเร็วที่สุด! ไม่ต้องดาวน์โหลดจากอินเทอร์เน็ต (ยกเว้น Homebrew + Node.js ถ้ายังไม่มี)</p>
+
+            <div class="info-box">
+                <span class="icon">💡</span>
+                <div>
+                    <strong>วิธีนี้เหมาะสำหรับ:</strong> ได้รับไฟล์ Happy POS ทั้งโฟลเดอร์ผ่าน USB, ZIP, หรือ AirDrop<br>
+                    ไม่ต้องติดตั้ง Git เพราะใช้ไฟล์จากเครื่องโดยตรง
+                </div>
+            </div>
+
+            <div class="step-detail">
+                <div class="visual-step">
+                    <div class="number">1</div>
+                    <div class="content">
+                        <strong>เตรียมไฟล์ Happy POS</strong>
+                        <p>ถ้าได้รับเป็นไฟล์ ZIP → ดับเบิลคลิกเพื่อแตกไฟล์ (Mac จะแตกให้อัตโนมัติ)</p>
+                        <p>ถ้าได้รับจาก USB / AirDrop → คัดลอกโฟลเดอร์ <strong>happy-pos</strong> ทั้งหมดมาไว้ในเครื่อง</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="step-detail">
+                <div class="visual-step">
+                    <div class="number">2</div>
+                    <div class="content">
+                        <strong>เปิดโฟลเดอร์ Happy POS แล้วดับเบิลคลิก <code>install-mac.command</code></strong>
+                        <div class="screenshot">
+                            📁 happy-pos/<br>
+                            &nbsp;&nbsp;├── 📄 <strong style="color: #764ba2;">install-mac.command</strong> ← ไฟล์นี้!<br>
+                            &nbsp;&nbsp;├── 📄 start-happy-pos.command<br>
+                            &nbsp;&nbsp;├── 📄 package.json<br>
+                            &nbsp;&nbsp;├── 📁 app/<br>
+                            &nbsp;&nbsp;├── 📁 components/<br>
+                            &nbsp;&nbsp;└── 📁 lib/
+                        </div>
+                        <div class="success-box">
+                            <span class="icon">✨</span>
+                            <div>Script จะตรวจพบ <code>package.json</code> ในโฟลเดอร์เดียวกันอัตโนมัติ — <strong>ไม่ต้องดาวน์โหลดจาก GitHub, ไม่ต้องติดตั้ง Git</strong></div>
+                        </div>
+                        <div class="warning-box">
+                            <span class="icon">⚠️</span>
+                            <div>
+                                <strong>ถ้า Mac แจ้งเตือน "ไม่สามารถเปิดได้"</strong><br>
+                                คลิกขวาที่ไฟล์ → เลือก <strong>"Open"</strong> → คลิก <strong>"Open"</strong> อีกครั้ง
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="step-detail">
+                <div class="visual-step">
+                    <div class="number">3</div>
+                    <div class="content">
+                        <strong>พิมพ์รหัสผ่าน Mac เมื่อถูกถาม</strong>
+                        <div class="info-box">
+                            <span class="icon">🔑</span>
+                            <div>เมื่อพิมพ์รหัสผ่าน จะไม่มีอะไรแสดงบนหน้าจอ — นี่เป็นเรื่องปกติ พิมพ์เสร็จแล้วกด Enter เลย</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="step-detail">
+                <div class="visual-step">
+                    <div class="number">4</div>
+                    <div class="content">
+                        <strong>รอ — ไม่ต้องทำอะไรเลย! (ประมาณ 3-10 นาที)</strong>
+                        <p>ระบบจะทำทุกอย่างให้อัตโนมัติ:</p>
+                        <p>✅ ติดตั้ง Homebrew + Node.js (ถ้ายังไม่มี)</p>
+                        <p>⏭️ ข้ามการติดตั้ง Git (ไม่จำเป็นเมื่อมีไฟล์ในเครื่อง!)</p>
+                        <p>✅ คัดลอกไฟล์ไปที่ <code>~/HappyPOS</code></p>
+                        <p>✅ ติดตั้ง packages + สร้างฐานข้อมูล + สร้าง shortcut</p>
+                        <p>✅ <strong>เปิด Happy POS ให้อัตโนมัติทันที!</strong></p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="success-box">
+                <span class="icon">🎉</span>
+                <div>เมื่อติดตั้งเสร็จ <strong>เบราว์เซอร์จะเปิด Happy POS ให้อัตโนมัติ</strong> — ไม่ต้องกดอะไรเพิ่มเลย! ครั้งต่อไปแค่ดับเบิลคลิก "Happy POS" บน Desktop</div>
+            </div>
+        </div>
+
+        <!-- วิธีที่ 2: จาก GitHub -->
+        <div class="card" id="mac-auto">
+            <h2><span class="step-num">2</span> วิธีที่ 2: ติดตั้งจาก GitHub (ต้องมีอินเทอร์เน็ต)</h2>
+            <p>ใช้ script เดียวกัน แต่วางไว้นอกโฟลเดอร์โปรเจกต์ — จะดาวน์โหลดจาก GitHub อัตโนมัติ</p>
+
+            <div class="step-detail">
+                <div class="visual-step">
+                    <div class="number">1</div>
+                    <div class="content">
+                        <strong>ดาวน์โหลดเฉพาะไฟล์ <code>install-mac.command</code></strong>
+                        <p>ดาวน์โหลดจาก GitHub หรือขอจากผู้ดูแลระบบ</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="step-detail">
+                <div class="visual-step">
+                    <div class="number">2</div>
+                    <div class="content">
+                        <strong>ดับเบิลคลิกไฟล์</strong>
+                        <p>ถ้าถูกถามรหัสผ่าน Mac ให้พิมพ์รหัสผ่านแล้วกด Enter (ตัวอักษรจะไม่แสดงบนหน้าจอ — เป็นเรื่องปกติ)</p>
+                        <div class="warning-box">
+                            <span class="icon">⚠️</span>
+                            <div>
+                                <strong>ถ้า Mac แจ้งเตือน</strong> → คลิกขวา → "Open" → "Open" อีกครั้ง
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="step-detail">
+                <div class="visual-step">
+                    <div class="number">3</div>
+                    <div class="content">
+                        <strong>รอ — ไม่ต้องทำอะไรเลย! (ประมาณ 5-15 นาที)</strong>
+                        <p>ระบบจะทำทุกอย่างให้อัตโนมัติ:</p>
+                        <p>✅ ติดตั้ง Homebrew + Node.js + Git อัตโนมัติ (ถ้ายังไม่มี)</p>
+                        <p>✅ ดาวน์โหลด Happy POS จาก GitHub</p>
+                        <p>✅ ติดตั้ง packages + สร้างฐานข้อมูล + สร้าง shortcut</p>
+                        <p>✅ <strong>เปิด Happy POS ให้อัตโนมัติทันที!</strong></p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="success-box">
+                <span class="icon">🎉</span>
+                <div>เมื่อติดตั้งเสร็จ <strong>เบราว์เซอร์จะเปิด Happy POS ให้อัตโนมัติ</strong> — ไม่ต้องกดอะไรเพิ่มเลย!</div>
+            </div>
+        </div>
+
+        <!-- วิธีที่ 3: Manual -->
+        <div class="card" id="mac-manual">
+            <h2><span class="step-num">3</span> วิธีที่ 3: ติดตั้งด้วยตัวเอง (step by step)</h2>
+            <p>สำหรับผู้ที่ต้องการติดตั้งเอง หรือ script อัตโนมัติมีปัญหา</p>
+
+            <h3 style="margin: 20px 0 10px; color: #764ba2;">ขั้นตอนที่ 1: เปิด Terminal</h3>
+            <div class="step-detail">
+                <div class="visual-step">
+                    <div class="number">1</div>
+                    <div class="content">
+                        <strong>เปิดแอป Terminal</strong>
+                        <p>กด <kbd>Command</kbd> + <kbd>Space</kbd> แล้วพิมพ์ <strong>"Terminal"</strong> แล้วกด Enter</p>
+                    </div>
+                </div>
+            </div>
+
+            <h3 style="margin: 20px 0 10px; color: #764ba2;">ขั้นตอนที่ 2: ติดตั้ง Homebrew</h3>
+            <div class="step-detail">
+                <p>คัดลอกคำสั่งนี้ไปวางใน Terminal แล้วกด Enter:</p>
+                <div class="code-block">/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"</div>
+                <p>พิมพ์รหัสผ่าน Mac เมื่อถูกถาม แล้วรอจนเสร็จ</p>
+            </div>
+
+            <h3 style="margin: 20px 0 10px; color: #764ba2;">ขั้นตอนที่ 3: ติดตั้ง Node.js</h3>
+            <div class="step-detail">
+                <div class="code-block">brew install node@20</div>
+            </div>
+
+            <h3 style="margin: 20px 0 10px; color: #764ba2;">ขั้นตอนที่ 4: ดาวน์โหลดและติดตั้ง Happy POS</h3>
+            <div class="step-detail">
+                <div class="code-block">
+                    <span class="comment"># ดาวน์โหลด Happy POS</span><br>
+                    git clone https://github.com/happydaddy/happy-pos.git ~/HappyPOS<br><br>
+                    <span class="comment"># เข้าไปในโฟลเดอร์</span><br>
+                    cd ~/HappyPOS<br><br>
+                    <span class="comment"># ติดตั้ง packages</span><br>
+                    npm install<br><br>
+                    <span class="comment"># สร้างฐานข้อมูลเริ่มต้น</span><br>
+                    npm run init-db
+                </div>
+            </div>
+        </div>
+
+        <!-- วิธีเปิดใช้งาน -->
+        <div class="card" id="mac-start">
+            <h2><span class="step-num">▶</span> วิธีเปิดใช้งาน Happy POS</h2>
+
+            <div class="step-detail">
+                <h3 style="color: #48bb78;">วิธีที่ 1: ดับเบิลคลิก shortcut (ง่ายที่สุด)</h3>
+                <p>ดับเบิลคลิกที่ <strong>"Happy POS"</strong> บน Desktop</p>
+                <p>Terminal จะเปิดขึ้น server จะเริ่มทำงาน และ browser จะเปิดให้อัตโนมัติ</p>
+            </div>
+
+            <div class="step-detail">
+                <h3 style="color: #764ba2;">วิธีที่ 2: ดับเบิลคลิกไฟล์ start</h3>
+                <p>ไปที่โฟลเดอร์ Happy POS แล้วดับเบิลคลิก <strong>start-happy-pos.command</strong></p>
+            </div>
+
+            <div class="warning-box">
+                <span class="icon">⚠️</span>
+                <div>
+                    <strong>อย่าปิดหน้าต่าง Terminal!</strong><br>
+                    หน้าต่างนี้คือ server ของ Happy POS — ถ้าปิดจะใช้งานไม่ได้<br>
+                    เมื่อใช้งานเสร็จ กด <kbd>Ctrl</kbd> + <kbd>C</kbd> เพื่อปิด server
+                </div>
+            </div>
+
+            <div class="info-box">
+                <span class="icon">🌐</span>
+                <div>
+                    หลังจากเปิด server แล้ว สามารถเปิด browser เองได้ที่:<br>
+                    <strong style="font-size: 1.1em;">http://localhost:21300</strong>
+                </div>
+            </div>
+        </div>
+
+        <!-- ดูจากมือถือ -->
+        <div class="card" id="mac-mobile">
+            <h2><span class="step-num">📱</span> ดูจากมือถือ (ผ่าน Wi-Fi เดียวกัน)</h2>
+
+            <div class="step-detail">
+                <div class="visual-step">
+                    <div class="number">1</div>
+                    <div class="content">
+                        <strong>ต่อมือถือกับ Wi-Fi เดียวกับ Mac</strong>
+                    </div>
+                </div>
+                <div class="visual-step">
+                    <div class="number">2</div>
+                    <div class="content">
+                        <strong>หา IP ของ Mac</strong>
+                        <p>คลิกที่ไอคอน Wi-Fi บน menu bar → กด <kbd>Option</kbd> ค้างไว้แล้วคลิก Wi-Fi</p>
+                        <p>ดูที่ <strong>"IP Address"</strong> เช่น <code>192.168.1.100</code></p>
+                        <p>หรือเปิด Terminal แล้วพิมพ์:</p>
+                        <div class="code-block">ipconfig getifaddr en0</div>
+                    </div>
+                </div>
+                <div class="visual-step">
+                    <div class="number">3</div>
+                    <div class="content">
+                        <strong>เปิด browser บนมือถือ</strong>
+                        <p>พิมพ์: <strong>http://192.168.1.100:21300</strong></p>
+                        <p>(เปลี่ยน IP ตามที่ได้จากขั้นตอนที่ 2)</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- FAQ Mac -->
+        <div class="card" id="mac-faq">
+            <h2>❓ คำถามที่พบบ่อย (Mac)</h2>
+
+            <div class="faq-item" onclick="this.classList.toggle('open')">
+                <div class="faq-q">
+                    ดับเบิลคลิกไฟล์ .command แล้วไม่เปิด ทำอย่างไร?
+                    <span class="faq-toggle">+</span>
+                </div>
+                <div class="faq-a">
+                    <p>1. คลิกขวาที่ไฟล์ → เลือก "Open" → คลิก "Open" อีกครั้ง</p>
+                    <p>2. ถ้ายังไม่ได้ ไปที่ System Preferences → Security & Privacy → คลิก "Open Anyway"</p>
+                    <p>3. อีกวิธี: เปิด Terminal แล้วพิมพ์ <code>chmod +x install-mac.command</code> แล้วดับเบิลคลิกอีกครั้ง</p>
+                </div>
+            </div>
+
+            <div class="faq-item" onclick="this.classList.toggle('open')">
+                <div class="faq-q">
+                    Homebrew ติดตั้งนานมาก ปกติไหม?
+                    <span class="faq-toggle">+</span>
+                </div>
+                <div class="faq-a">
+                    <p>ปกติครับ! การติดตั้ง Homebrew ครั้งแรกอาจใช้เวลา 5-10 นาที ขึ้นอยู่กับอินเทอร์เน็ต</p>
+                    <p>ถ้ามันดาวน์โหลด Xcode Command Line Tools ด้วยอาจใช้เวลานานขึ้น</p>
+                </div>
+            </div>
+
+            <div class="faq-item" onclick="this.classList.toggle('open')">
+                <div class="faq-q">
+                    ถามรหัสผ่าน แต่พิมพ์แล้วไม่เห็นอะไร ปกติไหม?
+                    <span class="faq-toggle">+</span>
+                </div>
+                <div class="faq-a">
+                    <p>ปกติครับ! ใน Terminal เมื่อพิมพ์รหัสผ่านจะไม่แสดงอะไรเลย (ไม่มี * หรือ ● ขึ้น)</p>
+                    <p>พิมพ์รหัสผ่านให้ถูกต้องแล้วกด Enter ได้เลย</p>
+                </div>
+            </div>
+
+            <div class="faq-item" onclick="this.classList.toggle('open')">
+                <div class="faq-q">
+                    ไม่มีอินเทอร์เน็ต ใช้งานได้ไหม?
+                    <span class="faq-toggle">+</span>
+                </div>
+                <div class="faq-a">
+                    <p>ได้! หลังจากติดตั้งเสร็จแล้ว Happy POS ทำงานแบบ offline ได้ทั้งหมด</p>
+                    <p>ต้องมีอินเทอร์เน็ตเฉพาะตอนติดตั้งครั้งแรกเท่านั้น</p>
+                </div>
+            </div>
+
+            <div class="faq-item" onclick="this.classList.toggle('open')">
+                <div class="faq-q">
+                    ข้อมูลร้านค้าเก็บไว้ที่ไหน?
+                    <span class="faq-toggle">+</span>
+                </div>
+                <div class="faq-a">
+                    <p>ข้อมูลทั้งหมดเก็บในเครื่อง Mac ของคุณที่:</p>
+                    <p><code>~/HappyPOS/data/</code></p>
+                    <p>แนะนำให้สำรองข้อมูลโฟลเดอร์ <code>data</code> เป็นประจำ</p>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Footer -->
+    <div class="footer">
+        <p>Happy POS v1.0 — ระบบ POS สำหรับร้านค้า SME ไทย</p>
+        <p>📖 <a href="user-guide.html" style="color: #2563eb; text-decoration: underline;">คู่มือการใช้งาน Happy POS</a> — วิธีใช้งานระบบอย่างละเอียด</p>
+        <p>มีปัญหาหรือข้อสงสัย? ติดต่อผู้ดูแลระบบ</p>
+    </div>
+
+</div>
+
+<script>
+function switchOS(os) {
+    // Switch tabs
+    document.querySelectorAll('.os-tab').forEach(tab => tab.classList.remove('active'));
+    document.querySelectorAll('.os-content').forEach(content => content.classList.remove('active'));
+
+    if (os === 'windows') {
+        document.querySelectorAll('.os-tab')[0].classList.add('active');
+        document.getElementById('windows-content').classList.add('active');
+    } else {
+        document.querySelectorAll('.os-tab')[1].classList.add('active');
+        document.getElementById('mac-content').classList.add('active');
+    }
+}
+
+// Auto-detect OS
+if (navigator.platform.indexOf('Mac') > -1) {
+    switchOS('mac');
+}
+</script>
+
+</body>
+</html>

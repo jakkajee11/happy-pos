@@ -1,0 +1,17 @@
+{
+  "shopName": "Happy POS ร้านค้า",
+  "shopAddress": "123 ถนนสุขุมวิท กรุงเทพฯ 10110",
+  "shopPhone": "02-xxx-xxxx",
+  "receiptHeader": "ขอบคุณที่ใช้บริการ",
+  "receiptFooter": "ยินดีต้อนรับกลับมาเสมอ",
+  "receiptShowLogo": false,
+  "currency": "THB",
+  "taxRate": 7,
+  "pointsPerBaht": 10,
+  "pointsValue": 1,
+  "lowStockAlert": 10,
+  "businessType": "general",
+  "primaryColor": "#f59000",
+  "themeId": "forest-green",
+  "promptpayId": "0897748688"
+}

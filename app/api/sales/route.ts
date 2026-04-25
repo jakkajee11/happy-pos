@@ -48,7 +48,12 @@ export async function POST(req: NextRequest) {
   const stockLogs = db.getStockLogs()
   for (const item of body.items) {
     const prod = products.find(p => p.id === item.productId)
-    if (prod && prod.trackStock) {
+    if (!prod) continue
+
+    // Check if product has a recipe — deduct from ingredients
+    if (db.hasRecipe(prod.id)) {
+      db.deductIngredientStock(prod.id, item.qty, sale.receiptNo)
+    } else if (prod.trackStock) {
       prod.stock = Math.max(0, prod.stock - item.qty)
       stockLogs.push({
         id: uuidv4(),

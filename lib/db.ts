@@ -122,15 +122,36 @@ function initSchema(db: Database.Database) {
     CREATE INDEX IF NOT EXISTS idx_sales_receiptNo  ON sales(receiptNo);
 
     CREATE TABLE IF NOT EXISTS stock_logs (
-      id          TEXT PRIMARY KEY,
-      productId   TEXT NOT NULL,
-      productName TEXT NOT NULL,
-      type        TEXT NOT NULL DEFAULT 'in',
-      qty         REAL NOT NULL DEFAULT 0,
-      note        TEXT,
-      createdAt   TEXT NOT NULL
+      id              TEXT PRIMARY KEY,
+      productId       TEXT NOT NULL DEFAULT '',
+      productName     TEXT NOT NULL DEFAULT '',
+      ingredientId    TEXT NOT NULL DEFAULT '',
+      ingredientName  TEXT NOT NULL DEFAULT '',
+      type            TEXT NOT NULL DEFAULT 'in',
+      qty             REAL NOT NULL DEFAULT 0,
+      note            TEXT,
+      createdAt       TEXT NOT NULL
     );
     CREATE INDEX IF NOT EXISTS idx_stock_logs_productId ON stock_logs(productId);
+
+    CREATE TABLE IF NOT EXISTS ingredients (
+      id                TEXT PRIMARY KEY,
+      name              TEXT NOT NULL,
+      unit              TEXT NOT NULL DEFAULT 'pcs',
+      stock             REAL NOT NULL DEFAULT 0,
+      lowStockThreshold REAL NOT NULL DEFAULT 0,
+      createdAt         TEXT NOT NULL
+    );
+
+    CREATE TABLE IF NOT EXISTS recipe_ingredients (
+      id            TEXT PRIMARY KEY,
+      productId     TEXT NOT NULL,
+      ingredientId  TEXT NOT NULL,
+      qtyPerUnit    REAL NOT NULL DEFAULT 0,
+      createdAt     TEXT NOT NULL,
+      UNIQUE(productId, ingredientId)
+    );
+    CREATE INDEX IF NOT EXISTS idx_recipe_productId ON recipe_ingredients(productId);
 
     CREATE TABLE IF NOT EXISTS settings (
       key   TEXT PRIMARY KEY,
@@ -181,6 +202,11 @@ function initSchema(db: Database.Database) {
       updatedAt    TEXT NOT NULL
     );
   `)
+
+  // Migration: add ingredientId/ingredientName columns to stock_logs if missing
+  try { db.exec('ALTER TABLE stock_logs ADD COLUMN ingredientId TEXT NOT NULL DEFAULT ""') } catch {}
+  try { db.exec('ALTER TABLE stock_logs ADD COLUMN ingredientName TEXT NOT NULL DEFAULT ""') } catch {}
+  try { db.exec('CREATE INDEX IF NOT EXISTS idx_stock_logs_ingredientId ON stock_logs(ingredientId)') } catch {}
 }
 
 // --- Helper converters ---
@@ -360,9 +386,30 @@ export interface StockLog {
   id: string
   productId: string
   productName: string
+  ingredientId?: string
+  ingredientName?: string
   type: 'in' | 'out' | 'adjust'
   qty: number
   note?: string
+  createdAt: string
+}
+
+export interface Ingredient {
+  id: string
+  name: string
+  unit: string
+  stock: number
+  lowStockThreshold: number
+  createdAt: string
+}
+
+export interface RecipeIngredient {
+  id: string
+  productId: string
+  ingredientId: string
+  ingredientName?: string
+  ingredientUnit?: string
+  qtyPerUnit: number
   createdAt: string
 }
 
@@ -485,8 +532,26 @@ function mapSale(row: any): Sale {
 function mapStockLog(row: any): StockLog {
   return {
     id: row.id, productId: row.productId, productName: row.productName,
+    ingredientId: row.ingredientId || undefined, ingredientName: row.ingredientName || undefined,
     type: row.type as StockLog['type'], qty: row.qty,
     note: row.note ?? undefined, createdAt: row.createdAt,
+  }
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function mapIngredient(row: any): Ingredient {
+  return {
+    id: row.id, name: row.name, unit: row.unit,
+    stock: row.stock, lowStockThreshold: row.lowStockThreshold, createdAt: row.createdAt,
+  }
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function mapRecipeIngredient(row: any): RecipeIngredient {
+  return {
+    id: row.id, productId: row.productId, ingredientId: row.ingredientId,
+    ingredientName: row.ingredientName ?? undefined, ingredientUnit: row.ingredientUnit ?? undefined,
+    qtyPerUnit: row.qtyPerUnit, createdAt: row.createdAt,
   }
 }
 
@@ -643,18 +708,153 @@ export const db = {
   saveStockLogs: (data: StockLog[]) => {
     const d = getDb()
     const upsert = d.prepare(`
-      INSERT INTO stock_logs (id, productId, productName, type, qty, note, createdAt)
-      VALUES (@id, @productId, @productName, @type, @qty, @note, @createdAt)
+      INSERT INTO stock_logs (id, productId, productName, ingredientId, ingredientName, type, qty, note, createdAt)
+      VALUES (@id, @productId, @productName, @ingredientId, @ingredientName, @type, @qty, @note, @createdAt)
       ON CONFLICT(id) DO UPDATE SET
         productId=excluded.productId, productName=excluded.productName,
+        ingredientId=excluded.ingredientId, ingredientName=excluded.ingredientName,
         type=excluded.type, qty=excluded.qty, note=excluded.note
     `)
     d.transaction(() => {
-      data.forEach(r => upsert.run(r))
+      data.forEach(r => upsert.run({
+        ...r,
+        ingredientId: r.ingredientId ?? '',
+        ingredientName: r.ingredientName ?? '',
+      }))
       if (data.length > 0) {
         d.prepare(`DELETE FROM stock_logs WHERE id NOT IN (${data.map(() => '?').join(',')})`).run(...data.map(r => r.id))
       } else {
         d.prepare('DELETE FROM stock_logs').run()
+      }
+    })()
+  },
+
+  addStockLog: (log: StockLog) => {
+    const d = getDb()
+    d.prepare(`INSERT INTO stock_logs (id, productId, productName, ingredientId, ingredientName, type, qty, note, createdAt) VALUES (@id, @productId, @productName, @ingredientId, @ingredientName, @type, @qty, @note, @createdAt)`).run({
+      ...log,
+      ingredientId: log.ingredientId ?? '',
+      ingredientName: log.ingredientName ?? '',
+    })
+  },
+
+  // ── Ingredients ─────────────────────────────────────────────────────────────
+  getIngredients: (): Ingredient[] =>
+    (getDb().prepare('SELECT * FROM ingredients ORDER BY name ASC').all() as never[]).map(mapIngredient),
+
+  saveIngredients: (data: Ingredient[]) => {
+    const d = getDb()
+    const upsert = d.prepare(`
+      INSERT INTO ingredients (id, name, unit, stock, lowStockThreshold, createdAt)
+      VALUES (@id, @name, @unit, @stock, @lowStockThreshold, @createdAt)
+      ON CONFLICT(id) DO UPDATE SET
+        name=excluded.name, unit=excluded.unit,
+        stock=excluded.stock, lowStockThreshold=excluded.lowStockThreshold
+    `)
+    d.transaction(() => {
+      data.forEach(r => upsert.run(r))
+      if (data.length > 0) {
+        d.prepare(`DELETE FROM ingredients WHERE id NOT IN (${data.map(() => '?').join(',')})`).run(...data.map(r => r.id))
+      } else {
+        d.prepare('DELETE FROM ingredients').run()
+      }
+    })()
+  },
+
+  getIngredientById: (id: string): Ingredient | undefined => {
+    const row = getDb().prepare('SELECT * FROM ingredients WHERE id = ?').get(id)
+    return row ? mapIngredient(row) : undefined
+  },
+
+  updateIngredientStock: (id: string, stock: number) => {
+    getDb().prepare('UPDATE ingredients SET stock = ? WHERE id = ?').run(stock, id)
+  },
+
+  deleteIngredient: (id: string) => {
+    const d = getDb()
+    d.transaction(() => {
+      d.prepare('DELETE FROM recipe_ingredients WHERE ingredientId = ?').run(id)
+      d.prepare('DELETE FROM ingredients WHERE id = ?').run(id)
+    })()
+  },
+
+  // ── Recipes ──────────────────────────────────────────────────────────────────
+  getRecipeByProductId: (productId: string): RecipeIngredient[] =>
+    (getDb().prepare(`
+      SELECT ri.*, i.name as ingredientName, i.unit as ingredientUnit
+      FROM recipe_ingredients ri
+      JOIN ingredients i ON i.id = ri.ingredientId
+      WHERE ri.productId = ?
+      ORDER BY i.name ASC
+    `).all(productId) as never[]).map(mapRecipeIngredient),
+
+  hasRecipe: (productId: string): boolean => {
+    const row = getDb().prepare('SELECT COUNT(*) as cnt FROM recipe_ingredients WHERE productId = ?').get(productId) as { cnt: number }
+    return (row?.cnt ?? 0) > 0
+  },
+
+  saveRecipe: (productId: string, items: RecipeIngredient[]) => {
+    const d = getDb()
+    const insert = d.prepare(`
+      INSERT INTO recipe_ingredients (id, productId, ingredientId, qtyPerUnit, createdAt)
+      VALUES (@id, @productId, @ingredientId, @qtyPerUnit, @createdAt)
+    `)
+    d.transaction(() => {
+      d.prepare('DELETE FROM recipe_ingredients WHERE productId = ?').run(productId)
+      items.forEach(r => insert.run(r))
+    })()
+  },
+
+  deleteRecipe: (productId: string) => {
+    getDb().prepare('DELETE FROM recipe_ingredients WHERE productId = ?').run(productId)
+  },
+
+  getAvailableStock: (productId: string): number | null => {
+    const rows = getDb().prepare(`
+      SELECT ri.qtyPerUnit, i.stock
+      FROM recipe_ingredients ri
+      JOIN ingredients i ON i.id = ri.ingredientId
+      WHERE ri.productId = ?
+    `).all(productId) as { qtyPerUnit: number; stock: number }[]
+    if (rows.length === 0) return null
+    return Math.min(...rows.map(r => Math.floor(r.stock / r.qtyPerUnit)))
+  },
+
+  getAllAvailableStock: (): Record<string, number> => {
+    const rows = getDb().prepare(`
+      SELECT ri.productId, ri.qtyPerUnit, i.stock
+      FROM recipe_ingredients ri
+      JOIN ingredients i ON i.id = ri.ingredientId
+    `).all() as { productId: string; qtyPerUnit: number; stock: number }[]
+    const minMap: Record<string, number[]> = {}
+    for (const r of rows) {
+      if (!minMap[r.productId]) minMap[r.productId] = []
+      minMap[r.productId].push(Math.floor(r.stock / r.qtyPerUnit))
+    }
+    const result: Record<string, number> = {}
+    for (const [pid, vals] of Object.entries(minMap)) {
+      result[pid] = Math.min(...vals)
+    }
+    return result
+  },
+
+  deductIngredientStock: (productId: string, qty: number, receiptNo: string) => {
+    const d = getDb()
+    const recipeRows = d.prepare(`
+      SELECT ri.ingredientId, ri.qtyPerUnit, i.name as ingredientName, i.stock
+      FROM recipe_ingredients ri
+      JOIN ingredients i ON i.id = ri.ingredientId
+      WHERE ri.productId = ?
+    `).all(productId) as { ingredientId: string; qtyPerUnit: number; ingredientName: string; stock: number }[]
+    const now = new Date().toISOString()
+    d.transaction(() => {
+      for (const r of recipeRows) {
+        const deduct = r.qtyPerUnit * qty
+        const newStock = Math.max(0, r.stock - deduct)
+        d.prepare('UPDATE ingredients SET stock = ? WHERE id = ?').run(newStock, r.ingredientId)
+        d.prepare(`INSERT INTO stock_logs (id, productId, productName, ingredientId, ingredientName, type, qty, note, createdAt) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`).run(
+          crypto.randomUUID(), '', '', r.ingredientId, r.ingredientName, 'out', deduct, `ขาย #${receiptNo}`, now
+        )
       }
     })()
   },

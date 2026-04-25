@@ -10,6 +10,7 @@ export default async function POSPage({ searchParams }: { searchParams: Promise<
   const members = db.getMembers()
   const promotions = db.getPromotions().filter(p => p.isActive)
   const settings = db.getSettings()
+  const recipeStockMap = db.getAllAvailableStock()
 
   // Resume an existing open order if orderId param is present
   const resumeOrder = orderId
@@ -24,6 +25,7 @@ export default async function POSPage({ searchParams }: { searchParams: Promise<
       promotions={promotions}
       settings={settings}
       resumeOrder={resumeOrder}
+      recipeStockMap={recipeStockMap}
     />
   )
 }

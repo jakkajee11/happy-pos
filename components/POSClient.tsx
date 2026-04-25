@@ -51,9 +51,10 @@ interface Props {
   promotions: Promotion[]
   settings: Settings
   resumeOrder?: OpenOrder | null
+  recipeStockMap?: Record<string, number>
 }
 
-export default function POSClient({ initialProducts, categories, members, promotions, settings, resumeOrder }: Props) {
+export default function POSClient({ initialProducts, categories, members, promotions, settings, resumeOrder, recipeStockMap = {} }: Props) {
   const router = useRouter()
   const [products] = useState(initialProducts)
   const [selectedCat, setSelectedCat] = useState<string>('all')
@@ -92,6 +93,16 @@ export default function POSClient({ initialProducts, categories, members, promot
     const matchSearch = !search || p.name.toLowerCase().includes(search.toLowerCase()) || p.barcode?.includes(search)
     return matchCat && matchSearch
   })
+
+  // Get effective stock for a product (from recipe or direct)
+  const getEffectiveStock = (p: Product): number | null => {
+    if (p.id in recipeStockMap) return recipeStockMap[p.id]
+    return p.trackStock ? p.stock : null
+  }
+  const isOutOfStock = (p: Product): boolean => {
+    const stock = getEffectiveStock(p)
+    return stock !== null && stock <= 0
+  }
 
   const filteredMembers = members.filter(m =>
     !memberSearch || m.name.includes(memberSearch) || m.phone.includes(memberSearch)
@@ -136,7 +147,7 @@ export default function POSClient({ initialProducts, categories, members, promot
   useEffect(() => {
     if (!search) return
     const exactMatch = products.find(p => p.barcode && p.barcode === search && p.isActive)
-    if (exactMatch && !(exactMatch.trackStock && exactMatch.stock <= 0)) {
+    if (exactMatch && !isOutOfStock(exactMatch)) {
       addToCart(exactMatch)
       setSearch('')
     }
@@ -366,7 +377,9 @@ export default function POSClient({ initialProducts, categories, members, promot
             <div className="grid grid-cols-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-5 gap-2 sm:gap-3">
               {filteredProducts.map(product => {
                 const inCart = cart.find(i => i.productId === product.id)
-                const outOfStock = product.trackStock && product.stock <= 0
+                const effectiveStock = getEffectiveStock(product)
+                const outOfStock = effectiveStock !== null && effectiveStock <= 0
+                const hasRecipe = product.id in recipeStockMap
                 return (
                   <button
                     key={product.id}
@@ -393,9 +406,9 @@ export default function POSClient({ initialProducts, categories, members, promot
                     )}
                     <p className="text-xs sm:text-sm font-medium text-gray-800 leading-tight line-clamp-2">{product.name}</p>
                     <p className="text-sm sm:text-base font-bold text-orange-600 mt-0.5 sm:mt-1">฿{fmt(product.price)}</p>
-                    {product.trackStock && (
-                      <p className={clsx('text-xs mt-0.5', product.stock <= 10 ? 'text-red-500' : 'text-gray-400')}>
-                        สต็อก: {product.stock}
+                    {effectiveStock !== null && (
+                      <p className={clsx('text-xs mt-0.5', hasRecipe ? 'text-orange-500' : effectiveStock <= 10 ? 'text-red-500' : 'text-gray-400')}>
+                        {hasRecipe ? 'ขายได้: ' : 'สต็อก: '}{effectiveStock}
                       </p>
                     )}
                     {inCart && (

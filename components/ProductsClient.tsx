@@ -1,13 +1,14 @@
 'use client'
 import { useState, useRef, useCallback } from 'react'
-import { Plus, Pencil, Trash2, Search, Package, X, Check, ChevronDown, Camera, ImageIcon } from 'lucide-react'
+import { Plus, Pencil, Trash2, Search, Package, X, Check, ChevronDown, Camera, ImageIcon, FlaskConical, BookOpen } from 'lucide-react'
 import clsx from 'clsx'
-import { Product, Category, Station } from '@/lib/db'
+import { Product, Category, Station, Ingredient, RecipeIngredient } from '@/lib/db'
 
 interface Props {
   initialProducts: Product[]
   initialCategories: Category[]
   initialStations: Station[]
+  initialIngredients: Ingredient[]
 }
 
 const ICONS = ['📦','☕','🍜','🍰','🥤','🧋','🍕','🍔','🍣','🛍️','👔','💊','🌸','🎁','🧴','🔧','📱','🖥️']
@@ -45,14 +46,20 @@ function resizeImage(file: File, maxSize: number = 480, quality: number = 0.82):
   })
 }
 
-export default function ProductsClient({ initialProducts, initialCategories, initialStations }: Props) {
+export default function ProductsClient({ initialProducts, initialCategories, initialStations, initialIngredients }: Props) {
   const [products, setProducts] = useState(initialProducts)
   const [categories, setCategories] = useState(initialCategories)
   const [stations] = useState(initialStations)
+  const [ingredients] = useState(initialIngredients)
   const [search, setSearch] = useState('')
   const [filterCat, setFilterCat] = useState('all')
   const [showModal, setShowModal] = useState(false)
   const [showCatModal, setShowCatModal] = useState(false)
+  const [showRecipeModal, setShowRecipeModal] = useState(false)
+  const [recipeProduct, setRecipeProduct] = useState<Product | null>(null)
+  const [recipeItems, setRecipeItems] = useState<{ ingredientId: string; qtyPerUnit: string }[]>([])
+  const [recipeAvailable, setRecipeAvailable] = useState<number | null>(null)
+  const [recipeSaving, setRecipeSaving] = useState(false)
   const [editing, setEditing] = useState<Product | null>(null)
   const [form, setForm] = useState<any>(emptyProduct)
   const [catForm, setCatForm] = useState({ name: '', icon: '📦', color: '#6B7280' })
@@ -178,6 +185,47 @@ export default function ProductsClient({ initialProducts, initialCategories, ini
     await fetch(`/api/categories?id=${id}`, { method: 'DELETE' })
     setCategories(prev => prev.filter(c => c.id !== id))
   }
+
+  const openRecipe = async (p: Product) => {
+    setRecipeProduct(p)
+    const res = await fetch(`/api/recipes?productId=${p.id}`)
+    const data = await res.json()
+    if (data.recipe?.length > 0) {
+      setRecipeItems(data.recipe.map((r: RecipeIngredient) => ({ ingredientId: r.ingredientId, qtyPerUnit: String(r.qtyPerUnit) })))
+    } else {
+      setRecipeItems([{ ingredientId: '', qtyPerUnit: '' }])
+    }
+    setRecipeAvailable(data.availableStock ?? null)
+    setShowRecipeModal(true)
+  }
+
+  const saveRecipe = async () => {
+    if (!recipeProduct) return
+    const validItems = recipeItems.filter(i => i.ingredientId && Number(i.qtyPerUnit) > 0)
+    if (validItems.length === 0) return
+    setRecipeSaving(true)
+    const res = await fetch('/api/recipes', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ productId: recipeProduct.id, items: validItems.map(i => ({ ingredientId: i.ingredientId, qtyPerUnit: Number(i.qtyPerUnit) })) }),
+    })
+    const data = await res.json()
+    setRecipeAvailable(data.availableStock ?? null)
+    setRecipeSaving(false)
+  }
+
+  const deleteRecipe = async () => {
+    if (!recipeProduct || !confirm('ลบสูตรนี้?')) return
+    await fetch(`/api/recipes?productId=${recipeProduct.id}`, { method: 'DELETE' })
+    setRecipeAvailable(null)
+    setRecipeItems([{ ingredientId: '', qtyPerUnit: '' }])
+    setShowRecipeModal(false)
+  }
+
+  const addRecipeRow = () => setRecipeItems(prev => [...prev, { ingredientId: '', qtyPerUnit: '' }])
+  const removeRecipeRow = (idx: number) => setRecipeItems(prev => prev.filter((_, i) => i !== idx))
+  const updateRecipeRow = (idx: number, field: 'ingredientId' | 'qtyPerUnit', value: string) =>
+    setRecipeItems(prev => prev.map((item, i) => i === idx ? { ...item, [field]: value } : item))
 
   const fmt = (n: number) => n.toLocaleString('th-TH')
 
@@ -313,6 +361,9 @@ export default function ProductsClient({ initialProducts, initialCategories, ini
                   </td>
                   <td className="px-4 py-3 text-center">
                     <div className="flex items-center justify-center gap-1">
+                      <button onClick={() => openRecipe(p)} className="p-1.5 text-gray-400 hover:text-orange-500 hover:bg-orange-50 rounded-lg transition-colors" title="สูตร">
+                        <BookOpen size={15} />
+                      </button>
                       <button onClick={() => openEdit(p)} className="p-1.5 text-gray-400 hover:text-orange-500 hover:bg-orange-50 rounded-lg transition-colors">
                         <Pencil size={15} />
                       </button>
@@ -512,6 +563,79 @@ export default function ProductsClient({ initialProducts, initialCategories, ini
                 className="w-full py-3 bg-orange-500 hover:bg-orange-600 disabled:bg-gray-200 disabled:text-gray-400 text-white rounded-xl font-semibold transition-colors">
                 {editingCat ? 'บันทึก' : 'เพิ่มหมวด'}
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Recipe Modal */}
+      {showRecipeModal && recipeProduct && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-3 sm:p-4">
+          <div className="bg-white rounded-2xl w-full max-w-lg shadow-2xl max-h-[90vh] overflow-y-auto">
+            <div className="sticky top-0 bg-white px-4 sm:px-5 py-4 border-b border-gray-100 flex items-center justify-between">
+              <div>
+                <h3 className="font-bold text-gray-800 flex items-center gap-2">
+                  <FlaskConical size={18} /> สูตร: {recipeProduct.name}
+                </h3>
+                {recipeAvailable !== null && (
+                  <p className="text-sm text-orange-600 mt-0.5">
+                    ขายได้อีก <span className="font-bold">{recipeAvailable}</span> ชิ้น (จากวัตถุดิบ)
+                  </p>
+                )}
+              </div>
+              <button onClick={() => setShowRecipeModal(false)}><X size={20} /></button>
+            </div>
+            <div className="p-4 sm:p-5 space-y-3">
+              {ingredients.length === 0 ? (
+                <div className="text-center py-8 text-gray-400">
+                  <p>ยังไม่มีวัตถุดิบ</p>
+                  <p className="text-sm mt-1">ไปที่ คลังสินค้า → วัตถุดิบ เพื่อเพิ่มก่อน</p>
+                </div>
+              ) : (
+                <>
+                  <div className="space-y-2">
+                    {recipeItems.map((item, idx) => (
+                      <div key={idx} className="flex items-center gap-2">
+                        <select value={item.ingredientId} onChange={e => updateRecipeRow(idx, 'ingredientId', e.target.value)}
+                          className="flex-1 border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-300">
+                          <option value="">-- เลือกวัตถุดิบ --</option>
+                          {ingredients.map(ing => (
+                            <option key={ing.id} value={ing.id}>{ing.name} ({ing.unit})</option>
+                          ))}
+                        </select>
+                        <div className="relative w-28">
+                          <input type="number" value={item.qtyPerUnit} onChange={e => updateRecipeRow(idx, 'qtyPerUnit', e.target.value)}
+                            placeholder="จำนวน" step="any" min="0"
+                            className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm text-center focus:outline-none focus:ring-2 focus:ring-orange-300" />
+                          {item.ingredientId && (
+                            <span className="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-gray-400">
+                              {ingredients.find(i => i.id === item.ingredientId)?.unit}
+                            </span>
+                          )}
+                        </div>
+                        <button onClick={() => removeRecipeRow(idx)}
+                          className="p-1.5 text-red-400 hover:text-red-600 hover:bg-red-50 rounded-lg">
+                          <Trash2 size={14} />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                  <button onClick={addRecipeRow}
+                    className="flex items-center gap-1 px-3 py-2 text-sm text-orange-600 hover:bg-orange-50 rounded-xl font-medium w-full justify-center">
+                    <Plus size={14} /> เพิ่มวัตถุดิบ
+                  </button>
+                  <div className="flex gap-2 pt-2">
+                    <button onClick={() => setShowRecipeModal(false)}
+                      className="flex-1 py-2.5 border border-gray-200 rounded-xl text-gray-600 font-medium hover:bg-gray-50">ปิด</button>
+                    <button onClick={deleteRecipe}
+                      className="px-4 py-2.5 border border-red-200 text-red-600 rounded-xl font-medium hover:bg-red-50">ลบสูตร</button>
+                    <button onClick={saveRecipe} disabled={recipeSaving || recipeItems.every(i => !i.ingredientId || !i.qtyPerUnit)}
+                      className="flex-1 py-2.5 bg-orange-500 text-white rounded-xl font-semibold hover:bg-orange-600 disabled:opacity-50">
+                      {recipeSaving ? 'กำลังบันทึก...' : 'บันทึกสูตร'}
+                    </button>
+                  </div>
+                </>
+              )}
             </div>
           </div>
         </div>
